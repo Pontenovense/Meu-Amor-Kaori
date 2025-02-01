@@ -4,20 +4,24 @@
 
 @media (max-width: 600px) {
     h1 {
-        font-size: 30px;
+        font-size: 28px;
+        text-align: center;
     }
 
     h2 {
-        font-size: 25px;
+        font-size: 22px;
+        text-align: center;
     }
 
     p {
-        font-size: 18px;
+        font-size: 16px;
+        text-align: justify;
     }
 
     section img {
-        width: 100%; /* Faz as imagens se ajustarem à tela */
-        height: auto; /* Mantém a proporção */
+        width: 100%;
+        max-width: 100%;
+        height: auto;
     }
 }
 
@@ -25,8 +29,8 @@
     box-sizing: border-box;
     border: solid;
     border-radius: 28px;
-    max-width: 800px; /* Define um máximo, mas permite ajuste em telas menores */
-    width: 90%; /* Para garantir que ele se ajuste na tela do celular */
+    max-width: 800px;  /* Mantém um limite no PC */
+    width: 100%; /* Ajusta para telas menores */
     margin: 24px auto;
     padding: 10px 20px;
     background-color: white;
@@ -62,20 +66,22 @@ p {
   }
 
 img {
-    width: 100%;
+    width: 100%; /* Agora todas as imagens ficam responsivas */
     object-fit: cover;
     border-radius: 26px;
+    max-width: 600px; /* Para não ultrapassar no PC */
+    display: block;
+    margin: 0 auto;
+}
+
+section img {
+    width: 100%; /* Agora as imagens dentro das sections também se ajustam */
+    max-width: 100%;
+    height: auto;
 }
 
 header img {
     height: 500px;
-}
-
-section img {
-    width: 600px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 section#03agosto img {
