@@ -50,6 +50,26 @@ h2 {
     text-transform: capitalize;
 }
 
+.button-container {
+    text-align: center;
+    margin-top: 20px; /* Adiciona um espaço em cima */
+}
+
+.button-container button {
+    background-color: #007BFF; /* Cor de fundo do botão */
+    color: white; /* Cor do texto */
+    font-size: 18px; /* Tamanho da fonte */
+    padding: 12px 24px; /* Espaçamento interno */
+    border: none;
+    border-radius: 8px; /* Bordas arredondadas */
+    cursor: pointer; /* Muda o cursor para indicar que é clicável */
+    transition: background-color 0.3s; /* Efeito suave na mudança de cor */
+}
+
+.button-container button:hover {
+    background-color: #0056b3; /* Cor de fundo ao passar o mouse */
+}
+
 header p {
     text-align: center;
 }

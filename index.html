@@ -18,6 +18,31 @@
             <p><strong>Meu amor</strong> Hoje completamos 1 mes de namoro. Desde pequeno ficava pensando se eu iria encontrar uma pessoa para passar minha vida ao lado, mas nunca imaginei que encontraria uma princesa como voce,uma pessoa que sempre esta ao meu lado, uma pessoa que sempre quando acordo é primeira coisa q penso, uma pessoa que o humor dela define o meu humor, uma pessoa iria mudar totalmente a minha vida, uma pessoa que a cada dia q passa, me faz me apaixonar cada vez mais. <br>
             Eu nunca imaginei que pudesse amar uma pessoa tanto igual <strong>eu te amo!</strong></p>
         </header>
+        <!-- Botão de Pausar/Despausar -->
+        <div class="button-container">
+            <button id="playPauseButton" onclick="toggleMusic()">Pausar Música</button>
+        </div>
+
+    <!-- Música de fundo -->
+        <audio id="musica" autoplay loop>
+            <source src="assets/music.mp3" type="audio/mpeg">
+            Seu navegador não suporta o elemento de áudio.
+        </audio>
+        <script>
+            // Função para alternar entre Pausar/Despausar
+            function toggleMusic() {
+                var musica = document.getElementById('musica');
+                var botao = document.getElementById('playPauseButton');
+                
+                if (musica.paused) {
+                    musica.play();  // Toca a música
+                    botao.textContent = 'Pausar Música';  // Atualiza o texto do botão
+                } else {
+                    musica.pause();  // Pausa a música
+                    botao.textContent = 'Despausar Música';  // Atualiza o texto do botão
+                }
+            }
+        </script>
         <div class="divider"></div>
         <main>
             <section id="03agosto">
