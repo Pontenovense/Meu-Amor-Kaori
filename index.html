@@ -19,30 +19,69 @@
             Eu nunca imaginei que pudesse amar uma pessoa tanto igual <strong>eu te amo!</strong></p>
         </header>
         <!-- Botão de Pausar/Despausar -->
-        <div class="button-container">
-            <button id="playPauseButton" onclick="toggleMusic()">Pausar Música</button>
-        </div>
+    <div class="button-container">
+        <button id="playPauseButton" onclick="toggleMusic()">Pausar Música</button>
+    </div>
 
     <!-- Música de fundo -->
-        <audio id="musica" autoplay loop>
-            <source src="assets/music.mp3" type="audio/mpeg">
-            Seu navegador não suporta o elemento de áudio.
-        </audio>
-        <script>
-            // Função para alternar entre Pausar/Despausar
-            function toggleMusic() {
-                var musica = document.getElementById('musica');
-                var botao = document.getElementById('playPauseButton');
-                
-                if (musica.paused) {
-                    musica.play();  // Toca a música
-                    botao.textContent = 'Pausar Música';  // Atualiza o texto do botão
-                } else {
-                    musica.pause();  // Pausa a música
-                    botao.textContent = 'Despausar Música';  // Atualiza o texto do botão
-                }
+    <audio id="musica1">
+        <source src="assets/music.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
+    <audio id="musica2">
+        <source src="assets/music2.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+    <script>
+        // Referências aos áudios
+        var musica1 = document.getElementById('musica1');
+        var musica2 = document.getElementById('musica2');
+        var botao = document.getElementById('playPauseButton');
+    
+        // Variável para controle de qual música está tocando
+        var musicaAtual = null;
+    
+        // Função para alternar entre Pausar/Despausar
+        function toggleMusic() {
+            if (musicaAtual === null) {
+                // Se nenhuma música estiver tocando, começa a primeira música
+                musica1.play();
+                musicaAtual = musica1;
+                botao.textContent = 'Pausar Música';
+            } else if (musicaAtual === musica1 && !musica1.paused) {
+                // Se a música atual for a música 1 e não estiver pausada, pausamos ela
+                musica1.pause();
+                botao.textContent = 'Despausar Música';
+            } else if (musicaAtual === musica2 && !musica2.paused) {
+                // Se a música atual for a música 2 e não estiver pausada, pausamos ela
+                musica2.pause();
+                botao.textContent = 'Despausar Música';
+            } else if (musicaAtual === musica1 && musica1.paused) {
+                // Se a música 1 estiver pausada, despausamos ela
+                musica1.play();
+                botao.textContent = 'Pausar Música';
+            } else if (musicaAtual === musica2 && musica2.paused) {
+                // Se a música 2 estiver pausada, despausamos ela
+                musica2.play();
+                botao.textContent = 'Pausar Música';
             }
-        </script>
+        }
+    
+        // Evento para quando a primeira música terminar
+        musica1.onended = function() {
+            musica2.play();  // Toca a segunda música automaticamente
+            musicaAtual = musica2; // Atualiza a música atual
+            botao.textContent = 'Pausar Música'; // Atualiza o texto do botão
+        };
+    
+        // Evento para quando a segunda música terminar
+        musica2.onended = function() {
+            musica1.play();  // Toca a primeira música automaticamente
+            musicaAtual = musica1; // Atualiza a música atual
+            botao.textContent = 'Pausar Música'; // Atualiza o texto do botão
+        };
+    </script>
         <div class="divider"></div>
         <main>
             <section id="03agosto">
@@ -53,17 +92,17 @@
             <section id="08agosto">
                 <h2>08.08.25</h2>
                 <img src="assets/08.08.jpeg" alt="foto na academia 2">
-                <p>Mais um vez a gente na academia.Eu tenho muito a agradecer à academia, pois acredito que sem ela, a nossa historia seria totalmente diferente.</p>
+                <p>Mais um vez a gente na academia. Eu tenho muito a agradecer à academia, pois acredito que sem ela, a nossa historia seria totalmente diferente.</p>
             </section>
             <section id="nenem">
                 <h2>Neném mais lindo desse mundo</h2>
                 <img src="assets/nenem.jpg" alt="Isabella neném">
-                <p>AAAI MEU AMOR <br>Olha que linda essa neném, eu amo tanto essa fotinha sua que voce nem imagina, sempre que vejo ela fico olhando querendo morder essa bochechinha linda. <br> <em>(por favor, mande mais fotos suas neném♥)</em></p>
+                <p>AAAI MEU AMOR <br>Olha que linda essa neném, eu amo tanto essa fotinha sua que voce nem imagina, sempre que vejo ela fico querendo morder essa bochechinha linda. <br> <em>(por favor, mande mais fotos suas neném♥)</em></p>
             </section>
             <section id="apresentacao">
                 <h2>Apresentação</h2>
                 <img src="assets/apresentacao.jpg" alt="Isabella e Lorenzo vovô">
-                <p>Amore, esse dia foi picoso, foi o dia da minha apresentacao na escola. Amor do ceu, nao sei se voce viu, mas nesse dia, a minha maquiadora era uma princesa MUITO linda, me apaixonei.</p>
+                <p>Amore, esse dia foi picoso, foi o dia da minha apresentacao na escola. Amor do ceu, nao sei se voce viu, mas nesse dia, a minha maquiadora era uma princesa MUITO linda, <strong>me apaixonei.</strong></p>
             </section>
             <section id="chacara">
                 <h2>Primeiro dia na Chácara</h2>
