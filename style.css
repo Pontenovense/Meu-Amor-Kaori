@@ -8,7 +8,30 @@
     border-radius: 28px;
     width: 800px;
     margin: 24px auto;
-    padding: 25px;
+    padding: 10px 33px;
+    background-color: white;
+}
+
+body {
+    background-color: rgb(110, 1, 1);
+}
+
+h1 {
+    font-size: 40px;
+    text-transform: uppercase;
+}
+
+h2 {
+    font-size: 35px;
+    text-transform: capitalize;
+}
+
+header p {
+    text-align: center;
+}
+
+p {
+    font-size: 20px;
 }
 
 .divider {
@@ -28,10 +51,27 @@ header img {
     height: 500px;
 }
 
+section img {
+    width: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 section#03agosto img {
     height: 500px;
 }
 
-p {
+section#pedido p {
     text-align: center;
+}
+
+.final {
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    color: white;
+    text-transform: uppercase;
 }
