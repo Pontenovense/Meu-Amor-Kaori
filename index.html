@@ -1,12 +1,110 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alice&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu amor Kaori</title>
+    <title>Minha Vida</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" type="imagex/png" href="assets/icone.ico">
 </head>
 <body>
-    
+    <div id="page">
+        <header>
+            <h1>Meu amor!</h1>
+            <img src="assets/image1.jpg" alt="Isabella e Lorenzo abracados">
+            <p><strong>Meu amor</strong> Hoje completamos 1 mes de namoro. Desde pequeno ficava pensando se eu iria encontrar uma pessoa para passar minha vida ao lado, mas nunca imaginei que encontraria uma princesa como voce,uma pessoa que sempre esta ao meu lado, uma pessoa que sempre quando acordo é primeira coisa q penso, uma pessoa que o humor dela define o meu humor, uma pessoa iria mudar totalmente a minha vida, uma pessoa que a cada dia q passa, me faz me apaixonar cada vez mais. <br>
+            Eu nunca imaginei que pudesse amar uma pessoa tanto igual <strong>eu te amo!</strong></p>
+        </header>
+        <div class="divider"></div>
+        <main>
+            <section id="03agosto">
+                <h2>03.08.24</h2>
+                <img src="assets/03.08.jpg" alt="foto na academia">
+                <p>Olha meu amor, eu, voce e o vini na academia.</p>
+            </section>
+            <section id="08agosto">
+                <h2>08.08.25</h2>
+                <img src="assets/08.08.jpeg" alt="foto na academia 2">
+                <p>Mais um vez a gente na academia.<br>Eu tenho muito a agradecer à academia, pois acredito que sem ela, a nossa historia seria totalmente diferente.</p>
+            </section>
+            <section id="nenem">
+                <h2>Neném mais lindo desse mundo</h2>
+                <img src="assets/nenem.jpg" alt="Isabella neném">
+                <p>AAAI MEU AMOR <br>Olha que linda essa neném, eu amo tanto essa fotinha sua que voce nem imagina, sempre que vejo ela fico olhando querendo morder essa bochechinha linda. <br> <em>(por favor, mande mais fotos suas neném♥)</em></p>
+            </section>
+            <section id="apresentacao">
+                <h2>Apresentação</h2>
+                <img src="assets/apresentacao.jpg" alt="Isabella e Lorenzo vovô">
+                <p>Amore, esse dia foi picoso, foi o dia da minha apresentacao na escola. <br>Amor do ceu, nao sei se voce viu, mas nesse dia, a minha maquiadora era uma princesa MUITO linda, me apaixonei.</p>
+            </section>
+            <section id="chacara">
+                <h2>Primeiro dia na Chácara</h2>
+                <img src="assets/colo.jpg" alt="Isabella no colo de Lorenzo">
+                <p>Olha so meu amor, esse dia a gente se divertiu, ate atiramos com uma arma de chumbinho e ainda o pedro gravou a gente testando um novo tipo de beijo, aiai.</p>
+                <h2>Indo embora da Chácara</h2>
+                <img src="assets/carro.jpg" alt="Isabella e Lorenzo no carro">
+                <p>Ai minha vida, esse dia foi muito especial, amo ter voce no meu colo quando estamos em algum carro, sinto que voce esta mais segura.</p>
+            </section>
+            <section id="selinho">
+                <h2>Primeiro selinho</h2>
+                <img src="assets/selinho.jpg" alt="Isabella e Lorenzo abracados">
+                <p>Amor, se eu nao me engano esse foi o dia do nosso primeiro selinho e essa foto foi tirada na casa da amanda antes de irmos pra escola. <br>
+                Nao gosto muito desse dia, mas ele nao deixa de ser um dia especial.</p>
+            </section>
+            <section id="restaurante">
+                <h2>Johnny Rockets</h2>
+                <img src="assets/restaurante.jpg" alt="Isabella e Lorenzo no restaurante">
+                <p>Olha amor, esse foi o dia que comemos no Johnny Rockets, tava muito gostoso o hambúrguer.</p>
+            </section>
+            <section id="casamento">
+                <h2>Casamento</h2>
+                <img src="assets/casamento.jpg" alt="Isabella e Lorenzo se beijando no casamento">
+                <p>Nesse dia fomos para o casamento da Thayslaine. <br>
+                Esse dia foi muito dahora tbm, dançamos juntos, nos divertimos e sera inesquecível</p>
+            </section>
+            <section id="nenem2">
+                <h2>Mais neném</h2>
+                <img src="assets/nenem2.jpg" alt="Isabella neném">
+                <p>Ai meu amor, mais uma foto sua Neném♥</p>
+            </section>
+            <section id="pedido">
+                <h2>Pedido de Namoro</h2>
+                <img src="assets/pedido.jpg" alt="Pedido de namoro">
+                <div class="divider"></div>
+                <img src="assets/pedido2.jpg" alt="Pedido de namoro">
+                <div class="divider"></div>
+                <img src="assets/pedido3.jpg" alt="Pedido de namoro">
+                <p>Meu amor, finalmente chegamos na parte do dia que viramos oficialmente <strong>Namorados</strong>. <br>
+                De longe o dia mais especial da minha vida, o dia que ouvi um sim quando te perguntei se queria namorar comigo, eu estava muito nervoso, com medo de algo dar errado e nao sair do jeito q sonhei. <br>
+                Esse dia foi incrível e vou lembrar dele ate o meu ultimo suspiro.</p>
+            </section>
+            <div class="divider"></div>
+            <p id="final">
+                Meu amor Espero que tenha gostado do presente e que os próximos dias, meses e anos de nossas vidas sejam cheio de alegria e amor.
+            </p>
+            <div class="divider"></div>
+            <p>Ja se passaram <span id="contador"></span> dias desde o dia <strong>01.01.25</strong></p>
+            <script>
+                function calcularDiferencaDias(dataAlvo) {
+            const hoje = new Date();
+            const dataFinal = new Date(dataAlvo);
+            let diferenca = Math.ceil((hoje - dataFinal) / (1000 * 60 * 60 * 24));
+            return diferenca; // Retorna dias positivos mesmo se já passou
+        }
+
+        function atualizarContador() {
+            const dataAlvo = "2025-01-01"; // Defina a data desejada
+            const diasPassados = calcularDiferencaDias(dataAlvo);
+            document.getElementById("contador").textContent = diasPassados;
+        }
+
+        atualizarContador();
+            </script>
+        </main>
+    </div>
+    <footer>Feito com Muito amor pelo seu amor</footer>
 </body>
 </html>
