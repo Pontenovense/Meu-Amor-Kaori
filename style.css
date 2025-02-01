@@ -2,13 +2,33 @@
     font-family: "Alice", serif;
 }
 
+@media (max-width: 600px) {
+    h1 {
+        font-size: 30px;
+    }
+
+    h2 {
+        font-size: 25px;
+    }
+
+    p {
+        font-size: 18px;
+    }
+
+    section img {
+        width: 100%; /* Faz as imagens se ajustarem à tela */
+        height: auto; /* Mantém a proporção */
+    }
+}
+
 #page {
     box-sizing: border-box;
     border: solid;
     border-radius: 28px;
-    width: 800px;
+    max-width: 800px; /* Define um máximo, mas permite ajuste em telas menores */
+    width: 90%; /* Para garantir que ele se ajuste na tela do celular */
     margin: 24px auto;
-    padding: 10px 33px;
+    padding: 10px 20px;
     background-color: white;
 }
 
