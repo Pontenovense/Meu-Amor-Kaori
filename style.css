@@ -116,6 +116,11 @@ section#pedido p {
     text-align: center;
 }
 
+#love {
+    text-align: center;
+    font-weight: bold;
+}
+
 footer {
     text-align: center;
     color: white;
