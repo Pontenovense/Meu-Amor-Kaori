@@ -13,12 +13,19 @@
 <body>
     <div id="page">
         <header>
-            <h1>Meu amor!</h1>
+            <div id="nav">
+                <h1>Meu amor!</h1>
+                <div class="button-container">
+                    <a href="resumo.html">
+                        <button>Resumos</button>
+                    </a>
+                </div>
+            </div>
             <img src="assets/image1.jpg" alt="Isabella e Lorenzo abracados">
             <p><strong>Meu amor,</strong> hoje completamos 1 mês de namoro. Desde pequeno, ficava pensando se eu iria encontrar uma pessoa para passar minha vida ao lado, mas nunca imaginei que encontraria uma princesa como você, uma pessoa que sempre está ao meu lado, uma pessoa que sempre que acordo, é a primeira coisa que penso, uma pessoa cujo humor dela define o meu humor, uma pessoa que iria mudar totalmente a minha vida, uma pessoa que, a cada dia que passa, me faz me apaixonar cada vez mais. <br>
                 Eu nunca imaginei que pudesse amar uma pessoa tanto como <strong>eu te amo!</strong></p>
         </header>
-        <!-- Botão de Pausar/Despausar -->
+    <!-- Botão de Pausar/Despausar -->
     <div class="button-container">
         <button id="playPauseButton">Iniciar Música</button>
     </div>
@@ -33,61 +40,7 @@
         <source src="assets/music2.mp3" type="audio/mpeg">
         Seu navegador não suporta o elemento de áudio.
     </audio>
-   <script>
-    // Referências aos áudios
-    const musica1 = document.getElementById('musica1');
-        const musica2 = document.getElementById('musica2');
-        const botao = document.getElementById('playPauseButton');
-
-        // Variável para controle de qual música está tocando
-        let musicaAtual = null;
-        let tocando = false;
-
-        // Função para iniciar a primeira música
-        function iniciarMusica() {
-            musica1.play();
-            musicaAtual = musica1;
-            tocando = true;
-            botao.textContent = 'Pausar Música';
-        }
-
-        // Função para pausar/despausar a música atual
-        function toggleMusic() {
-            if (tocando) {
-                musicaAtual.pause();
-                tocando = false;
-                botao.textContent = 'Despausar Música';
-            } else {
-                musicaAtual.play();
-                tocando = true;
-                botao.textContent = 'Pausar Música';
-            }
-        }
-
-        // Evento para quando a primeira música terminar
-        musica1.addEventListener('ended', () => {
-            musica2.play();
-            musicaAtual = musica2;
-            tocando = true;
-            botao.textContent = 'Pausar Música';
-        });
-
-        // Evento para quando a segunda música terminar
-        musica2.addEventListener('ended', () => {
-            musicaAtual = null;
-            tocando = false;
-            botao.textContent = 'Iniciar Música';
-        });
-
-        // Evento de clique no botão
-        botao.addEventListener('click', () => {
-            if (musicaAtual === null) {
-                iniciarMusica(); // Inicia a primeira música
-            } else {
-                toggleMusic(); // Pausa/despausa a música atual
-            }
-        });
-    </script> 
+    <script src="script.js"></script>
         <div class="divider"></div>
         <main>
             <section id="03agosto">

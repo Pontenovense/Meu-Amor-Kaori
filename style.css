@@ -45,6 +45,11 @@ h1 {
     text-transform: uppercase;
 }
 
+header a {
+    text-decoration: none;
+    color: inherit;
+}
+
 h2 {
     font-size: 35px;
     text-transform: capitalize;
@@ -119,6 +124,13 @@ section#pedido p {
 #love {
     text-align: center;
     font-weight: bold;
+}
+
+#nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 footer {
