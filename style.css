@@ -1,5 +1,12 @@
 :root {
     font-family: "Alice", serif;
+    --primary-color: #ff6b6b;
+    --secondary-color: #4ecdc4;
+    --accent-color: #45b7d1;
+    --dark-red: rgb(110, 1, 1);
+    --light-pink: #ffe0e0;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 600px) {
@@ -27,22 +34,47 @@
 
 #page {
     box-sizing: border-box;
-    border: solid;
+    border: 3px solid var(--primary-color);
     border-radius: 28px;
-    max-width: 800px;  /* Mantém um limite no PC */
-    width: 100%; /* Ajusta para telas menores */
+    max-width: 800px;
+    width: 100%;
     margin: 24px auto;
-    padding: 10px 20px;
-    background-color: white;
+    padding: 20px 30px;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    box-shadow: var(--shadow-hover);
+    position: relative;
+    overflow: hidden;
+}
+
+#page::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 107, 107, 0.03) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(180deg); }
 }
 
 body {
-    background-color: rgb(110, 1, 1);
+    background: linear-gradient(135deg, var(--dark-red) 0%, #8b0000 50%, #a0002a 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
 h1 {
     font-size: 40px;
     text-transform: uppercase;
+    color: black;
+    margin-bottom: 20px;
 }
 
 header a {
@@ -53,26 +85,187 @@ header a {
 h2 {
     font-size: 35px;
     text-transform: capitalize;
+    color: black;
+    margin: 30px 0 20px 0;
 }
 
 .button-container {
     text-align: center;
-    margin-top: 20px; /* Adiciona um espaço em cima */
+    margin: 30px 0;
 }
 
 .button-container button {
-    background-color: #007BFF; /* Cor de fundo do botão */
-    color: white; /* Cor do texto */
-    font-size: 18px; /* Tamanho da fonte */
-    padding: 12px 24px; /* Espaçamento interno */
-    border: none;
-    border-radius: 8px; /* Bordas arredondadas */
-    cursor: pointer; /* Muda o cursor para indicar que é clicável */
-    transition: background-color 0.3s; /* Efeito suave na mudança de cor */
+    background: linear-gradient(145deg, #dc143c, #8b0000);
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 15px 35px;
+    border: 2px solid #fff;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 8px 16px rgba(220, 20, 60, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
 }
 
 .button-container button:hover {
-    background-color: #0056b3; /* Cor de fundo ao passar o mouse */
+    transform: translateY(-3px);
+    background: linear-gradient(145deg, #ff1744, #b71c1c);
+    box-shadow: 
+        0 12px 24px rgba(220, 20, 60, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.button-container button:active {
+    transform: translateY(-1px);
+    box-shadow: 
+        0 6px 12px rgba(220, 20, 60, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.button-container button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
+}
+
+.button-container button:hover::before {
+    left: 100%;
+}
+
+/* Botão de navegação especial */
+#nav .button-container button {
+    background: linear-gradient(145deg, #dc143c, #8b0000);
+    padding: 12px 25px;
+    font-size: 16px;
+    box-shadow: 
+        0 6px 12px rgba(220, 20, 60, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+#nav .button-container button:hover {
+    background: linear-gradient(145deg, #ff1744, #b71c1c);
+    box-shadow: 
+        0 8px 16px rgba(220, 20, 60, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Controles de Música */
+.music-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.music-controls button {
+    background: linear-gradient(145deg, #dc143c, #8b0000);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border: 2px solid #fff;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 6px 12px rgba(220, 20, 60, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
+    min-width: 120px;
+}
+
+.music-controls button:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(145deg, #ff1744, #b71c1c);
+    box-shadow: 
+        0 8px 16px rgba(220, 20, 60, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.music-controls button:active {
+    transform: translateY(-1px);
+    box-shadow: 
+        0 4px 8px rgba(220, 20, 60, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.music-controls button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
+}
+
+.music-controls button:hover::before {
+    left: 100%;
+}
+
+/* Botão principal (play/pause) destacado */
+#playPauseButton {
+    background: linear-gradient(145deg, #ff1744, #b71c1c) !important;
+    font-size: 18px !important;
+    padding: 14px 25px !important;
+    min-width: 140px !important;
+    box-shadow: 
+        0 8px 16px rgba(220, 20, 60, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+#playPauseButton:hover {
+    background: linear-gradient(145deg, #ff4569, #d32f2f) !important;
+    box-shadow: 
+        0 10px 20px rgba(220, 20, 60, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Botões desabilitados */
+.music-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.music-controls button:disabled:hover {
+    transform: none !important;
+    background: linear-gradient(145deg, #dc143c, #8b0000) !important;
+    box-shadow: 
+        0 6px 12px rgba(220, 20, 60, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
 }
 
 header p {
@@ -85,18 +278,28 @@ p {
 
 .divider {
     width: 100%;
-    height: 1px;
+    height: 2px;
     margin: 36px 0;
-    background-color: #d9d9d9;
-  }
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 1px;
+    opacity: 0.6;
+}
 
 img {
-    width: 100%; /* Agora todas as imagens ficam responsivas */
+    width: 100%;
     object-fit: cover;
     border-radius: 26px;
-    max-width: 600px; /* Para não ultrapassar no PC */
+    max-width: 600px;
     display: block;
     margin: 0 auto;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-hover);
+    cursor: pointer;
 }
 
 section img {
@@ -137,4 +340,685 @@ footer {
     text-align: center;
     color: white;
     text-transform: uppercase;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    margin-top: 30px;
+    padding: 20px;
+}
+
+/* Notificações */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    z-index: 1000;
+    transform: translateX(400px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-hover);
+    backdrop-filter: blur(10px);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.play {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.notification.pause {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+/* Animações suaves */
+section {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Melhorias responsivas */
+@media (max-width: 768px) {
+    #page {
+        margin: 10px;
+        padding: 15px 20px;
+        border-width: 2px;
+    }
+    
+    h1 {
+        font-size: 32px;
+        margin-bottom: 15px;
+    }
+    
+    h2 {
+        font-size: 26px;
+        margin: 25px 0 15px 0;
+    }
+    
+    p {
+        font-size: 18px;
+        line-height: 1.6;
+    }
+    
+    .button-container {
+        margin: 25px 0;
+    }
+    
+    .button-container button {
+        padding: 14px 30px;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+    }
+    
+    #nav .button-container button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    img {
+        border-radius: 20px;
+        margin: 15px auto;
+    }
+    
+    header img {
+        height: 350px;
+    }
+    
+    section#03agosto img {
+        height: 350px;
+    }
+    
+    .divider {
+        margin: 25px 0;
+    }
+    
+    footer {
+        font-size: 14px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    #page {
+        margin: 5px;
+        padding: 12px 15px;
+        border-radius: 20px;
+    }
+    
+    h1 {
+        font-size: 28px;
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    h2 {
+        font-size: 22px;
+        text-align: center;
+        margin: 20px 0 12px 0;
+    }
+
+    p {
+        font-size: 16px;
+        text-align: justify;
+        line-height: 1.5;
+    }
+    
+    .button-container {
+        margin: 20px 0;
+    }
+    
+    .button-container button {
+        padding: 12px 25px;
+        font-size: 15px;
+        border-radius: 40px;
+        width: 90%;
+        max-width: 280px;
+    }
+    
+    .music-controls {
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .music-controls button {
+        padding: 10px 15px;
+        font-size: 14px;
+        min-width: 100px;
+    }
+    
+    #playPauseButton {
+        font-size: 16px !important;
+        padding: 12px 20px !important;
+        min-width: 120px !important;
+    }
+    
+    #nav {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    #nav .button-container {
+        margin: 10px 0;
+    }
+    
+    #nav .button-container button {
+        padding: 8px 18px;
+        font-size: 13px;
+        width: auto;
+    }
+
+    section img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 15px;
+        margin: 10px auto;
+    }
+    
+    header img {
+        height: 280px;
+        object-fit: cover;
+    }
+    
+    section#03agosto img {
+        height: 280px;
+        object-fit: cover;
+    }
+    
+    .divider {
+        margin: 20px 0;
+        height: 1px;
+    }
+    
+    .notification {
+        right: 10px;
+        left: 10px;
+        transform: translateY(-100px);
+        padding: 12px 20px;
+        font-size: 14px;
+        border-radius: 40px;
+    }
+    
+    .notification.show {
+        transform: translateY(0);
+    }
+    
+    footer {
+        font-size: 12px;
+        padding: 12px;
+        margin-top: 15px;
+    }
+    
+    #love {
+        font-size: 18px;
+        margin: 15px 0;
+    }
+    
+    .final {
+        font-size: 16px;
+        margin: 15px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    #page {
+        margin: 2px;
+        padding: 10px 12px;
+        border-radius: 15px;
+    }
+    
+    h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    
+    h2 {
+        font-size: 20px;
+        margin: 18px 0 10px 0;
+    }
+    
+    p {
+        font-size: 15px;
+        line-height: 1.4;
+    }
+    
+    .button-container button {
+        padding: 10px 20px;
+        font-size: 14px;
+        width: 95%;
+        max-width: 250px;
+    }
+    
+    .music-controls {
+        gap: 8px;
+        margin: 15px 0;
+    }
+    
+    .music-controls button {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 85px;
+    }
+    
+    #playPauseButton {
+        font-size: 14px !important;
+        padding: 10px 16px !important;
+        min-width: 100px !important;
+    }
+    
+    #nav .button-container button {
+        padding: 6px 15px;
+        font-size: 12px;
+    }
+    
+    header img {
+        height: 220px;
+    }
+    
+    section#03agosto img {
+        height: 220px;
+    }
+    
+    img {
+        border-radius: 12px;
+        margin: 8px auto;
+    }
+    
+    .divider {
+        margin: 15px 0;
+    }
+    
+    .notification {
+        padding: 10px 15px;
+        font-size: 13px;
+        top: 10px;
+        right: 5px;
+        left: 5px;
+    }
+    
+    footer {
+        font-size: 11px;
+        padding: 10px;
+    }
+    
+    #love {
+        font-size: 16px;
+    }
+    
+    .final {
+        font-size: 14px;
+    }
+}
+
+/* Melhorias para telas muito pequenas */
+@media (max-width: 360px) {
+    #page {
+        margin: 1px;
+        padding: 8px 10px;
+    }
+    
+    h1 {
+        font-size: 22px;
+    }
+    
+    h2 {
+        font-size: 18px;
+    }
+    
+    p {
+        font-size: 14px;
+    }
+    
+    .button-container button {
+        padding: 8px 18px;
+        font-size: 13px;
+        width: 98%;
+    }
+    
+    header img {
+        height: 180px;
+    }
+    
+    section#03agosto img {
+        height: 180px;
+    }
+}
+
+/* Modal/Lightbox para imagens */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    margin: auto;
+    animation: zoomIn 0.3s ease;
+}
+
+.modal-content img {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    color: white;
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.close:hover {
+    background: rgba(220, 20, 60, 0.8);
+    transform: scale(1.1);
+}
+
+.modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.modal-nav:hover {
+    background: rgba(220, 20, 60, 0.8);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.modal-prev {
+    left: -80px;
+}
+
+.modal-next {
+    right: -80px;
+}
+
+.modal-counter {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+    from { 
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsividade do modal */
+@media (max-width: 768px) {
+    .close {
+        top: -35px;
+        font-size: 28px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .modal-nav {
+        font-size: 24px;
+        width: 50px;
+        height: 50px;
+    }
+    
+    .modal-prev {
+        left: -60px;
+    }
+    
+    .modal-next {
+        right: -60px;
+    }
+    
+    .modal-counter {
+        bottom: -40px;
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        max-width: 95%;
+        max-height: 85%;
+    }
+    
+    .close {
+        top: -30px;
+        font-size: 24px;
+        width: 35px;
+        height: 35px;
+    }
+    
+    .modal-nav {
+        font-size: 20px;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .modal-prev {
+        left: -50px;
+    }
+    
+    .modal-next {
+        right: -50px;
+    }
+    
+    .modal-counter {
+        bottom: -35px;
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}
+
+/* Botão Voltar ao Topo */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(145deg, #dc143c, #8b0000);
+    color: white;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 8px 16px rgba(220, 20, 60, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    user-select: none;
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: linear-gradient(145deg, #ff1744, #b71c1c);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 
+        0 12px 24px rgba(220, 20, 60, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.back-to-top:active {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 
+        0 6px 12px rgba(220, 20, 60, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Animação de pulso sutil */
+.back-to-top::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(220, 20, 60, 0.3), rgba(139, 0, 0, 0.3));
+    z-index: -1;
+    animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+}
+
+/* Responsividade do botão */
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .back-to-top {
+        bottom: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+}
+
+/* Orientação paisagem em dispositivos móveis */
+@media (max-width: 768px) and (orientation: landscape) {
+    #page {
+        margin: 5px auto;
+        max-width: 90%;
+    }
+    
+    header img {
+        height: 250px;
+    }
+    
+    section#03agosto img {
+        height: 250px;
+    }
+    
+    .button-container button {
+        width: auto;
+        min-width: 200px;
+    }
+    
+    .modal-content {
+        max-height: 80%;
+    }
+    
+    .modal-nav {
+        top: 45%;
+    }
+    
+    .back-to-top {
+        bottom: 10px;
+        right: 10px;
+    }
 }

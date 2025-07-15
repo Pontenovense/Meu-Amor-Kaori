@@ -25,22 +25,23 @@
             <p><strong>Meu amor,</strong> hoje completamos 1 mês de namoro. Desde pequeno, ficava pensando se eu iria encontrar uma pessoa para passar minha vida ao lado, mas nunca imaginei que encontraria uma princesa como você, uma pessoa que sempre está ao meu lado, uma pessoa que sempre que acordo, é a primeira coisa que penso, uma pessoa cujo humor dela define o meu humor, uma pessoa que iria mudar totalmente a minha vida, uma pessoa que, a cada dia que passa, me faz me apaixonar cada vez mais. <br>
                 Eu nunca imaginei que pudesse amar uma pessoa tanto como <strong>eu te amo!</strong></p>
         </header>
-    <!-- Botão de Pausar/Despausar -->
-    <div class="button-container">
-        <button id="playPauseButton">Iniciar Música</button>
+    <!-- Controles de Música -->
+    <div class="music-controls">
+        <button id="prevButton">⏮️ Anterior</button>
+        <button id="playPauseButton">▶️ Iniciar</button>
+        <button id="nextButton">⏭️ Próxima</button>
     </div>
 
     <!-- Música de fundo -->
-    <audio id="musica1">
+    <audio id="musica1" preload="metadata">
         <source src="assets/music.mp3" type="audio/mpeg">
         Seu navegador não suporta o elemento de áudio.
     </audio>
 
-    <audio id="musica2">
+    <audio id="musica2" preload="metadata">
         <source src="assets/music2.mp3" type="audio/mpeg">
         Seu navegador não suporta o elemento de áudio.
     </audio>
-    <script src="script.js"></script>
         <div class="divider"></div>
         <main>
             <section id="03agosto">
@@ -135,5 +136,12 @@
         </main>
     </div>
     <footer>Feito com Muito amor pelo seu amor</footer>
+    
+    <!-- Botão Voltar ao Topo -->
+    <button class="back-to-top" id="backToTop" title="Voltar ao topo">
+        ↑
+    </button>
+    
+    <script src="script.js"></script>
 </body>
 </html>

@@ -11,7 +11,6 @@
     <link rel="shortcut icon" type="imagex/png" href="assets/icone.ico">
 </head>
 <body>
-    <script src=”script.js”></script>
     <div id="page">
         <header>
             <a href="index.html">
@@ -21,22 +20,23 @@
                 <strong>Meu amor,</strong> neste local irei colocar tudo que fizemos em cada mes, um resuminho com fotos e lembranças. Espero que goste, bjss!
             </p>
         </header>
-        <!-- Botão de Pausar/Despausar -->
-        <div class="button-container">
-            <button id="playPauseButton">Iniciar Música</button>
+        <!-- Controles de Música -->
+        <div class="music-controls">
+            <button id="prevButton">⏮️ Anterior</button>
+            <button id="playPauseButton">▶️ Iniciar</button>
+            <button id="nextButton">⏭️ Próxima</button>
         </div>
 
         <!-- Música de fundo -->
-        <audio id="musica1">
+        <audio id="musica1" preload="metadata">
             <source src="assets/music.mp3" type="audio/mpeg">
             Seu navegador não suporta o elemento de áudio.
         </audio>
 
-        <audio id="musica2">
+        <audio id="musica2" preload="metadata">
             <source src="assets/music2.mp3" type="audio/mpeg">
             Seu navegador não suporta o elemento de áudio.
         </audio>
-        <script src="script.js"></script>
         <div class="divider"></div>
         <main>
             <section id="fevereiro">
@@ -96,5 +96,12 @@
         </main>
     </div>
     <footer>Feito com Muito amor pelo seu amor</footer>
+    
+    <!-- Botão Voltar ao Topo -->
+    <button class="back-to-top" id="backToTop" title="Voltar ao topo">
+        ↑
+    </button>
+    
+    <script src="script.js"></script>
 </body>
 </html>
