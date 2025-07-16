@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (tocando) {
                 playPauseButton.textContent = '⏸️ Pausar';
             } else {
-                playPauseButton.textContent = musicaAtual ? '▶️ Continuar' : '▶️ Iniciar';
+                playPauseButton.textContent = musicaAtual ? '▶️ Play' : '▶️ Iniciar';
             }
         }
     }
@@ -373,6 +373,116 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+
+        // ===== TOUCH/SWIPE SUPPORT =====
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let touchStartY = 0;
+        let touchEndY = 0;
+        const minSwipeDistance = 50; // Distância mínima para considerar um swipe
+
+        // Adiciona event listeners de touch ao modal
+        modal.addEventListener('touchstart', handleTouchStart, { passive: true });
+        modal.addEventListener('touchend', handleTouchEnd, { passive: true });
+        modal.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+        function handleTouchStart(e) {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }
+
+        function handleTouchMove(e) {
+            // Previne scroll da página quando estiver no modal
+            if (modal.classList.contains('show')) {
+                e.preventDefault();
+            }
+        }
+
+        function handleTouchEnd(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }
+
+        function handleSwipe() {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            
+            // Verifica se é um swipe horizontal válido
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                if (deltaX > 0) {
+                    // Swipe para direita - foto anterior
+                    changeImage(-1);
+                } else {
+                    // Swipe para esquerda - próxima foto
+                    changeImage(1);
+                }
+            }
+            
+            // Swipe para baixo pode fechar o modal
+            if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > minSwipeDistance) {
+                closeModal();
+            }
+        }
+
+        // Adiciona indicadores visuais de swipe para mobile
+        const style = document.createElement('style');
+        style.textContent = `
+            @media (max-width: 768px) {
+                .modal-content {
+                    touch-action: pan-y;
+                }
+                
+                .modal-nav {
+                    display: none; /* Esconde botões de navegação em mobile */
+                }
+                
+                .modal-content::before,
+                .modal-content::after {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 40px;
+                    height: 40px;
+                    background: rgba(0, 0, 0, 0.3);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px;
+                    color: white;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                    pointer-events: none;
+                }
+                
+                .modal-content.swiping-left::after {
+                    content: '→';
+                    right: 10px;
+                    opacity: 1;
+                }
+                
+                .modal-content.swiping-right::before {
+                    content: '←';
+                    left: 10px;
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Adiciona feedback visual durante o swipe
+        let isSwiping = false;
+        
+        modal.addEventListener('touchstart', () => {
+            isSwiping = true;
+        }, { passive: true });
+        
+        modal.addEventListener('touchend', () => {
+            isSwiping = false;
+            modal.querySelector('.modal-content').classList.remove('swiping-left', 'swiping-right');
+        }, { passive: true });
     }
 
     function openModal(index) {

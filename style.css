@@ -670,6 +670,147 @@ section {
     }
 }
 
+/* Melhorias específicas para botões de música em mobile */
+@media (max-width: 600px) {
+    .music-controls {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin: 20px 0;
+        padding: 0 5px;
+    }
+    
+    .music-controls button {
+        padding: 10px 12px;
+        font-size: 13px;
+        min-width: 75px;
+        width: auto;
+        margin: 0;
+        border-radius: 18px;
+        min-height: 40px;
+    }
+    
+    #playPauseButton {
+        font-size: 14px !important;
+        padding: 11px 15px !important;
+        min-width: 85px !important;
+        max-width: 85px !important;
+        order: 0;
+        min-height: 42px;
+    }
+    
+    /* Melhorias de acessibilidade para toque */
+    .music-controls button {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        user-select: none;
+    }
+    
+    .music-controls button:active {
+        transform: scale(0.95) !important;
+        transition: transform 0.1s ease;
+    }
+}
+
+@media (max-width: 480px) {
+    .music-controls {
+        gap: 5px;
+        padding: 0 2px;
+    }
+    
+    .music-controls button {
+        padding: 8px 10px;
+        font-size: 12px;
+        min-width: 70px;
+        min-height: 38px;
+    }
+    
+    #playPauseButton {
+        font-size: 13px !important;
+        padding: 9px 12px !important;
+        min-width: 80px !important;
+        max-width: 80px !important;
+        min-height: 40px;
+    }
+}
+
+@media (max-width: 360px) {
+    .music-controls {
+        gap: 4px;
+        margin: 15px 0;
+    }
+    
+    .music-controls button {
+        padding: 6px 8px;
+        font-size: 11px;
+        min-width: 65px;
+        min-height: 35px;
+    }
+    
+    #playPauseButton {
+        font-size: 12px !important;
+        padding: 8px 10px !important;
+        min-width: 75px !important;
+        max-width: 75px !important;
+        min-height: 37px;
+    }
+}
+
+/* Melhorias para telas muito pequenas */
+@media (max-width: 360px) {
+    #page {
+        margin: 1px;
+        padding: 8px 10px;
+    }
+    
+    h1 {
+        font-size: 22px;
+    }
+    
+    h2 {
+        font-size: 18px;
+    }
+    
+    p {
+        font-size: 14px;
+    }
+    
+    .button-container button {
+        padding: 8px 18px;
+        font-size: 13px;
+        width: 98%;
+    }
+    
+    header img {
+        height: 180px;
+    }
+    
+    section#03agosto img {
+        height: 180px;
+    }
+}
+
+/* Layout horizontal melhorado para tablets em modo paisagem */
+@media (max-width: 768px) and (min-width: 481px) and (orientation: landscape) {
+    .music-controls {
+        gap: 15px;
+        margin: 25px 0;
+    }
+    
+    .music-controls button {
+        padding: 14px 18px;
+        font-size: 15px;
+        min-width: 110px;
+    }
+    
+    #playPauseButton {
+        font-size: 17px !important;
+        padding: 16px 22px !important;
+        min-width: 130px !important;
+    }
+}
+
 /* Melhorias para telas muito pequenas */
 @media (max-width: 360px) {
     #page {
