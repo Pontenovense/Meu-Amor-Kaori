@@ -4,14 +4,16 @@ window.supabaseClient = window.supabase.createClient(
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmaHl0dHd6ZWljc2xucmZlbnloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MjU4NjYsImV4cCI6MjA4MzUwMTg2Nn0.6fCQBPaT4W_5gbRDIPvdck8I6KlE81-C7nv3sUu2EU4'
 );
 
-// Authentication state
-let currentUser = null;
+// Authentication state (will be set in initAuth)
 
 // DOM elements
 let authModal = null;
 let loginForm = null;
 let logoutButton = null;
 let adminLink = null;
+
+// Global current user state
+let currentUser = null;
 
 // Initialize authentication
 function initAuth() {
@@ -31,7 +33,7 @@ function initAuth() {
         checkSession();
 
         // Listen for auth state changes
-        supabase.auth.onAuthStateChange((event, session) => {
+        window.supabaseClient.auth.onAuthStateChange((event, session) => {
             console.log('🔄 Mudança de estado de auth:', event, session?.user?.email);
             currentUser = session?.user || null;
             updateUI();
@@ -207,7 +209,7 @@ function addAuthStyles() {
 
 // Check current session
 async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
     currentUser = session?.user || null;
     updateUI();
 }
@@ -224,7 +226,7 @@ async function handleLogin(e) {
     messageDiv.className = '';
 
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
             email,
             password
         });
@@ -246,7 +248,7 @@ async function handleLogin(e) {
 
 // Handle logout
 async function handleLogout() {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await window.supabaseClient.auth.signOut();
     if (error) {
         console.error('Erro no logout:', error);
     }
