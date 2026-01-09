@@ -428,7 +428,7 @@ function updateUI() {
     // Update nav button text
     const authButton = document.getElementById('authButton');
     if (authButton) {
-        authButton.textContent = isLoggedIn ? 'Logout' : 'Admin';
+        authButton.textContent = isLoggedIn ? 'Logout' : 'Login';
         authButton.onclick = isLoggedIn ? handleLogout : openAuthModal;
     }
 }
@@ -443,7 +443,8 @@ window.Auth = {
     init: initAuth,
     isLoggedIn: () => !!currentUser,
     getUser: () => currentUser,
-    showLoginPrompt: showLoginPrompt
+    showLoginPrompt: showLoginPrompt,
+    handleLogout: handleLogout
 };
 
     // Return public API
