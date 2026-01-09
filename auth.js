@@ -1,19 +1,19 @@
-// Create global Supabase client
-window.supabaseClient = window.supabase.createClient(
-    'https://qfhyttwzeicslnrfenyh.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmaHl0dHd6ZWljc2xucmZlbnloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MjU4NjYsImV4cCI6MjA4MzUwMTg2Nn0.6fCQBPaT4W_5gbRDIPvdck8I6KlE81-C7nv3sUu2EU4'
-);
+// Create global Supabase client (only if not exists)
+if (!window.supabaseClient) {
+    window.supabaseClient = window.supabase.createClient(
+        'https://qfhyttwzeicslnrfenyh.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmaHl0dHd6ZWljc2xucmZlbnloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MjU4NjYsImV4cCI6MjA4MzUwMTg2Nn0.6fCQBPaT4W_5gbRDIPvdck8I6KlE81-C7nv3sUu2EU4'
+    );
+}
 
-// Authentication state (will be set in initAuth)
-
-// DOM elements
-let authModal = null;
-let loginForm = null;
-let logoutButton = null;
-let adminLink = null;
-
-// Global current user state
-let currentUser = null;
+// Authentication module to avoid global variable conflicts
+window.AuthModule = (function() {
+    // Private variables (scoped to this module)
+    let authModal = null;
+    let loginForm = null;
+    let logoutButton = null;
+    let adminLink = null;
+    let currentUser = null;
 
 // Initialize authentication
 function initAuth() {
@@ -300,3 +300,12 @@ window.Auth = {
     getUser: () => currentUser,
     showLoginPrompt: showLoginPrompt
 };
+
+    // Return public API
+    return {
+        init: initAuth,
+        isLoggedIn: () => !!currentUser,
+        getUser: () => currentUser,
+        showLoginPrompt: showLoginPrompt
+    };
+})();
