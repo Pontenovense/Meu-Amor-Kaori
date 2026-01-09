@@ -16,21 +16,32 @@ let adminLink = null;
 
 // Initialize authentication
 function initAuth() {
-    // Create auth modal
-    createAuthModal();
+    console.log('🔐 Inicializando sistema de autenticação...');
 
-    // Get DOM elements
-    adminLink = document.getElementById('adminLink');
-    logoutButton = document.getElementById('logoutButton');
+    try {
+        // Create auth modal
+        createAuthModal();
+        console.log('✅ Modal de autenticação criado');
 
-    // Check current session
-    checkSession();
+        // Get DOM elements
+        adminLink = document.getElementById('adminLink');
+        logoutButton = document.getElementById('logoutButton');
+        console.log('✅ Elementos DOM obtidos');
 
-    // Listen for auth state changes
-    supabase.auth.onAuthStateChange((event, session) => {
-        currentUser = session?.user || null;
-        updateUI();
-    });
+        // Check current session
+        checkSession();
+
+        // Listen for auth state changes
+        supabase.auth.onAuthStateChange((event, session) => {
+            console.log('🔄 Mudança de estado de auth:', event, session?.user?.email);
+            currentUser = session?.user || null;
+            updateUI();
+        });
+
+        console.log('🎉 Sistema de autenticação inicializado com sucesso!');
+    } catch (error) {
+        console.error('❌ Erro ao inicializar autenticação:', error);
+    }
 }
 
 // Create authentication modal
