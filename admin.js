@@ -283,8 +283,43 @@ async function updateMonth(monthId, name, description, imageData) {
     const keptImageIds = imageData.filter(img => img.existingId).map(img => img.existingId);
     const imagesToDelete = currentImages.filter(img => !keptImageIds.includes(img.id)).map(img => img.id);
 
-    // Delete removed images
+    // Delete removed images from both database and storage
     if (imagesToDelete.length > 0) {
+        // First, get the URLs of images to delete from storage
+        const { data: imagesToDeleteData, error: fetchDeleteError } = await window.supabaseClient
+            .from('images')
+            .select('url')
+            .in('id', imagesToDelete);
+
+        if (fetchDeleteError) {
+            console.error('Error fetching images to delete:', fetchDeleteError);
+            // Continue anyway
+        }
+
+        // Delete images from storage
+        if (imagesToDeleteData && imagesToDeleteData.length > 0) {
+            for (const image of imagesToDeleteData) {
+                try {
+                    // Extract filename from URL
+                    const urlParts = image.url.split('/');
+                    const fileName = urlParts[urlParts.length - 1];
+
+                    const { error: storageError } = await window.supabaseClient.storage
+                        .from('images')
+                        .remove([fileName]);
+
+                    if (storageError) {
+                        console.error('Error deleting image from storage:', storageError);
+                        // Continue with other deletions
+                    }
+                } catch (storageError) {
+                    console.error('Error deleting image from storage:', storageError);
+                    // Continue with other deletions
+                }
+            }
+        }
+
+        // Delete image records from database
         const { error: deleteError } = await window.supabaseClient
             .from('images')
             .delete()
@@ -440,6 +475,41 @@ function deleteMonth(monthId, monthName) {
         modal.classList.remove('show');
 
         try {
+            // First, get all images associated with this month
+            const { data: images, error: fetchError } = await window.supabaseClient
+                .from('images')
+                .select('url')
+                .eq('month_id', monthId);
+
+            if (fetchError) {
+                console.error('Error fetching images for deletion:', fetchError);
+                // Continue with month deletion even if image fetch fails
+            }
+
+            // Delete images from storage
+            if (images && images.length > 0) {
+                for (const image of images) {
+                    try {
+                        // Extract filename from URL
+                        const urlParts = image.url.split('/');
+                        const fileName = urlParts[urlParts.length - 1];
+
+                        const { error: storageError } = await window.supabaseClient.storage
+                            .from('images')
+                            .remove([fileName]);
+
+                        if (storageError) {
+                            console.error('Error deleting image from storage:', storageError);
+                            // Continue with other deletions
+                        }
+                    } catch (storageError) {
+                        console.error('Error deleting image from storage:', storageError);
+                        // Continue with other deletions
+                    }
+                }
+            }
+
+            // Delete the month (this will cascade delete image records)
             const { error } = await window.supabaseClient
                 .from('months')
                 .delete()
@@ -834,6 +904,40 @@ function deleteMusic(musicId, musicTitle) {
         modal.classList.remove('show');
 
         try {
+            // First, get the music record to get the URL
+            const { data: musicRecord, error: fetchError } = await window.supabaseClient
+                .from('music')
+                .select('url')
+                .eq('id', musicId)
+                .single();
+
+            if (fetchError) {
+                console.error('Error fetching music for deletion:', fetchError);
+                // Continue with music deletion even if fetch fails
+            }
+
+            // Delete audio file from storage
+            if (musicRecord && musicRecord.url) {
+                try {
+                    // Extract filename from URL
+                    const urlParts = musicRecord.url.split('/');
+                    const fileName = urlParts[urlParts.length - 1];
+
+                    const { error: storageError } = await window.supabaseClient.storage
+                        .from('music')
+                        .remove([fileName]);
+
+                    if (storageError) {
+                        console.error('Error deleting audio from storage:', storageError);
+                        // Continue with database deletion
+                    }
+                } catch (storageError) {
+                    console.error('Error deleting audio from storage:', storageError);
+                    // Continue with database deletion
+                }
+            }
+
+            // Delete the music record
             const { error } = await window.supabaseClient
                 .from('music')
                 .delete()
