@@ -1,8 +1,5 @@
-// Use the same Supabase client from auth.js
-const supabase = window.supabase.createClient(
-    'https://qfhyttwzeicslnrfenyh.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmaHl0dHd6ZWljc2xucmZlbnloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MjU4NjYsImV4cCI6MjA4MzUwMTg2Nn0.6fCQBPaT4W_5gbRDIPvdck8I6KlE81-C7nv3sUu2EU4'
-);
+// Use the global Supabase client
+const supabase = window.supabaseClient;
 
 // Global variables
 let editingMonthId = null;
