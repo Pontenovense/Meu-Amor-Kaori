@@ -80,10 +80,10 @@ ALTER TABLE images ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for authenticated users (admin access)
 CREATE POLICY "Allow authenticated users to manage months" ON months
-    FOR ALL USING (auth.role() = 'authenticated');
+    FOR ALL USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "Allow authenticated users to manage images" ON images
-    FOR ALL USING (auth.role() = 'authenticated');
+    FOR ALL USING (auth.uid() IS NOT NULL);
 
 -- Create policies for public read access (for the website)
 CREATE POLICY "Allow public to read months" ON months
@@ -91,3 +91,12 @@ CREATE POLICY "Allow public to read months" ON months
 
 CREATE POLICY "Allow public to read images" ON images
     FOR SELECT USING (true);
+
+-- Storage policies for images bucket
+-- Allow authenticated users to upload, update, and delete images
+CREATE POLICY "Allow authenticated users to manage images storage" ON storage.objects
+    FOR ALL USING (bucket_id = 'images' AND auth.uid() IS NOT NULL);
+
+-- Allow public to read images (for the website)
+CREATE POLICY "Allow public to read images storage" ON storage.objects
+    FOR SELECT USING (bucket_id = 'images');

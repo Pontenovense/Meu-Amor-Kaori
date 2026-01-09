@@ -247,26 +247,59 @@ async function updateMonth(monthId, name, description, imageData) {
 
     if (monthError) throw monthError;
 
-    // Delete all existing images for this month
-    const { error: deleteError } = await window.supabaseClient
+    // Get current images for the month
+    const { data: currentImages, error: fetchError } = await window.supabaseClient
         .from('images')
-        .delete()
+        .select('id')
         .eq('month_id', monthId);
 
-    if (deleteError) {
-        console.error('Error deleting existing images:', deleteError);
-        // Continue anyway
+    if (fetchError) {
+        console.error('Error fetching current images:', fetchError);
+        throw fetchError;
     }
 
-    // Upload new images
-    const imagesWithFiles = imageData.filter(img => img.file);
-    if (imagesWithFiles.length > 0) {
-        await uploadImages(monthId, imagesWithFiles);
+    const keptImageIds = imageData.filter(img => img.existingId).map(img => img.existingId);
+    const imagesToDelete = currentImages.filter(img => !keptImageIds.includes(img.id)).map(img => img.id);
+
+    // Delete removed images
+    if (imagesToDelete.length > 0) {
+        const { error: deleteError } = await window.supabaseClient
+            .from('images')
+            .delete()
+            .in('id', imagesToDelete);
+
+        if (deleteError) {
+            console.error('Error deleting removed images:', deleteError);
+            // Continue anyway
+        }
+    }
+
+    // Update existing images and upload new ones
+    for (let i = 0; i < imageData.length; i++) {
+        const img = imageData[i];
+        if (img.existingId) {
+            // Update existing image
+            const { error: updateError } = await window.supabaseClient
+                .from('images')
+                .update({
+                    description: img.description,
+                    alt: img.description,
+                    image_order: i
+                })
+                .eq('id', img.existingId);
+
+            if (updateError) {
+                console.error('Error updating image:', updateError);
+            }
+        } else if (img.file) {
+            // Upload new image
+            await uploadImages(monthId, [img], i);
+        }
     }
 }
 
 // Upload images to Supabase Storage
-async function uploadImages(monthId, imageData) {
+async function uploadImages(monthId, imageData, startOrder = 0) {
     for (let i = 0; i < imageData.length; i++) {
         const file = imageData[i].file;
         const desc = imageData[i].description || '';
@@ -297,7 +330,7 @@ async function uploadImages(monthId, imageData) {
                 url: publicUrl,
                 alt: desc,
                 description: desc,
-                image_order: i
+                image_order: startOrder + i
             }]);
 
         if (imageError) throw imageError;
