@@ -13,8 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load months from database
 async function loadMonths() {
     const mainElement = document.getElementById('resumosMain');
+    console.log('📅 Carregando meses do banco de dados...');
 
     try {
+        console.log('🔍 Fazendo query no Supabase...');
         const { data: months, error } = await supabase
             .from('months')
             .select(`
@@ -23,15 +25,29 @@ async function loadMonths() {
             `)
             .order('name');
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Erro na query:', error);
+            throw error;
+        }
+
+        console.log('✅ Query executada com sucesso. Meses encontrados:', months?.length || 0);
+        if (months) {
+            console.log('📋 Meses:', months.map(m => ({ nome: m.name, imagens: m.images?.length || 0 })));
+        }
 
         displayMonths(months);
     } catch (error) {
-        console.error('Erro ao carregar meses:', error);
+        console.error('❌ Erro ao carregar meses:', error);
         mainElement.innerHTML = `
             <div class="error-message">
-                <p>Erro ao carregar os resumos. Tente novamente mais tarde.</p>
+                <p>Erro ao carregar os resumos. Verifique o console para mais detalhes.</p>
                 <p>Detalhes: ${error.message}</p>
+                <p><strong>Possíveis causas:</strong></p>
+                <ul>
+                    <li>SQL não foi executado no Supabase</li>
+                    <li>Configuração incorreta do banco</li>
+                    <li>Problemas de permissão</li>
+                </ul>
             </div>
         `;
     }
