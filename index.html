@@ -9,6 +9,7 @@
     <title>Minha Vida</title>
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" type="imagex/png" href="assets/icone.ico">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="page">
@@ -19,6 +20,10 @@
                     <a href="resumo.html">
                         <button>Resumos</button>
                     </a>
+                    <a href="admin.html" id="adminLink" style="display: none;">
+                        <button>Admin</button>
+                    </a>
+                    <button id="authButton">Admin</button>
                 </div>
             </div>
             <img src="assets/image1.jpg" alt="Isabella e Lorenzo abracados">
@@ -143,5 +148,12 @@
     </button>
     
     <script src="script.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Initialize authentication when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            window.Auth.init();
+        });
+    </script>
 </body>
 </html>

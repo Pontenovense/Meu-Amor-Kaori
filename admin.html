@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alice&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Resumos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" type="imagex/png" href="assets/icone.ico">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="page">
+        <header>
+            <a href="index.html">
+                <h1>Administração</h1>
+            </a>
+            <p>Gerencie os resumos mensais do site</p>
+            <div class="admin-nav">
+                <button id="logoutButton">Logout</button>
+            </div>
+        </header>
+
+        <div class="divider"></div>
+
+        <main class="admin-main">
+            <!-- Add/Edit Month Form -->
+            <section class="admin-section">
+                <h2 id="formTitle">Adicionar Novo Mês</h2>
+                <form id="monthForm">
+                    <div class="form-group">
+                        <label for="monthName">Nome do Mês:</label>
+                        <input type="text" id="monthName" required placeholder="Ex: Janeiro, Fevereiro">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="monthDescription">Descrição do Mês:</label>
+                        <textarea id="monthDescription" rows="4" placeholder="Descreva o que aconteceu neste mês..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Imagens:</label>
+                        <div id="imagesContainer">
+                            <div class="image-item">
+                                <input type="file" accept="image/*" class="imageFile">
+                                <input type="text" placeholder="Descrição da imagem (opcional)" class="imageDesc">
+                                <button type="button" class="removeImage" style="display: none;">Remover</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addImageButton">Adicionar Imagem</button>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" id="submitButton">Salvar Mês</button>
+                        <button type="button" id="cancelButton" style="display: none;">Cancelar</button>
+                    </div>
+                </form>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Existing Months List -->
+            <section class="admin-section">
+                <h2>Meses Existentes</h2>
+                <div id="monthsList">
+                    <p>Carregando meses...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer>Administração - Feito com Muito amor</footer>
+
+    <!-- Modal for confirmations -->
+    <div id="confirmModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <h3 id="confirmTitle">Confirmar Ação</h3>
+            <p id="confirmMessage">Tem certeza que deseja excluir este mês?</p>
+            <div class="confirm-actions">
+                <button id="confirmYes">Sim</button>
+                <button id="confirmNo">Não</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
