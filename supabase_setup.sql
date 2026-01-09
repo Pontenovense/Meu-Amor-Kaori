@@ -22,6 +22,15 @@ CREATE TABLE images (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create music table
+CREATE TABLE music (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    music_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create index for better performance
 CREATE INDEX idx_images_month_id ON images(month_id);
 CREATE INDEX idx_images_order ON images(month_id, image_order);
@@ -75,9 +84,18 @@ INSERT INTO images (month_id, url, alt, description, image_order) VALUES
 ((SELECT id FROM months WHERE name = 'Junho'), 'assets/junho/2.jpg', '', NULL, 2),
 ((SELECT id FROM months WHERE name = 'Junho'), 'assets/junho/3.jpg', '', NULL, 3);
 
+-- Insert initial music (existing music files)
+INSERT INTO music (title, url, music_order) VALUES
+('Música Principal', 'https://qfhyttwzeicslnrfenyh.supabase.co/storage/v1/object/public/music/music.mp3', 1),
+('Música 1', 'https://qfhyttwzeicslnrfenyh.supabase.co/storage/v1/object/public/music/music1.mp3', 2),
+('Música 2', 'https://qfhyttwzeicslnrfenyh.supabase.co/storage/v1/object/public/music/music2.mp3', 3),
+('Música 4', 'https://qfhyttwzeicslnrfenyh.supabase.co/storage/v1/object/public/music/music4.mp3', 4),
+('Música WAV', 'https://qfhyttwzeicslnrfenyh.supabase.co/storage/v1/object/public/music/music.wav', 5);
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE months ENABLE ROW LEVEL SECURITY;
 ALTER TABLE images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE music ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for authenticated users (admin access)
 CREATE POLICY "Allow authenticated users to manage months" ON months
@@ -86,11 +104,17 @@ CREATE POLICY "Allow authenticated users to manage months" ON months
 CREATE POLICY "Allow authenticated users to manage images" ON images
     FOR ALL USING (auth.uid() IS NOT NULL);
 
+CREATE POLICY "Allow authenticated users to manage music" ON music
+    FOR ALL USING (auth.uid() IS NOT NULL);
+
 -- Create policies for public read access (for the website)
 CREATE POLICY "Allow public to read months" ON months
     FOR SELECT USING (true);
 
 CREATE POLICY "Allow public to read images" ON images
+    FOR SELECT USING (true);
+
+CREATE POLICY "Allow public to read music" ON music
     FOR SELECT USING (true);
 
 -- Storage policies for images bucket
@@ -101,3 +125,12 @@ CREATE POLICY "Allow authenticated users to manage images storage" ON storage.ob
 -- Allow public to read images (for the website)
 CREATE POLICY "Allow public to read images storage" ON storage.objects
     FOR SELECT USING (bucket_id = 'images');
+
+-- Storage policies for music bucket
+-- Allow authenticated users to upload, update, and delete music
+CREATE POLICY "Allow authenticated users to manage music storage" ON storage.objects
+    FOR ALL USING (bucket_id = 'music' AND auth.uid() IS NOT NULL);
+
+-- Allow public to read music (for the website)
+CREATE POLICY "Allow public to read music storage" ON storage.objects
+    FOR SELECT USING (bucket_id = 'music');

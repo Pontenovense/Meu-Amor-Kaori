@@ -1,14 +1,14 @@
 // Aguarda o DOM carregar completamente
 document.addEventListener('DOMContentLoaded', function() {
-    // Referências aos áudios e controles
-    const musica1 = document.getElementById('musica1');
-    const musica2 = document.getElementById('musica2');
+    // Referências aos controles
     const playPauseButton = document.getElementById('playPauseButton');
     const prevButton = document.getElementById('prevButton');
     const nextButton = document.getElementById('nextButton');
+    const musicContainer = document.getElementById('musicContainer');
 
-    // Array com todas as músicas
-    const musicas = [musica1, musica2].filter(m => m !== null);
+    // Array com todas as músicas (carregado dinamicamente)
+    let musicas = [];
+    let musicData = [];
     
     // Variáveis de controle
     let musicaAtualIndex = 0;
@@ -274,6 +274,128 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
     });
+
+    // Carrega músicas do Supabase
+    async function loadMusic() {
+        try {
+            console.log('🎵 Carregando músicas do Supabase...');
+            const { data: music, error } = await window.supabaseClient
+                .from('music')
+                .select('*')
+                .order('music_order', { ascending: true });
+
+            if (error) {
+                console.error('❌ Erro ao carregar músicas:', error);
+                // Fallback para músicas locais se houver erro
+                loadFallbackMusic();
+                return;
+            }
+
+            if (!music || music.length === 0) {
+                console.log('⚠️ Nenhuma música encontrada no banco de dados');
+                loadFallbackMusic();
+                return;
+            }
+
+            musicData = music;
+            console.log(`✅ ${music.length} música(s) carregada(s) do banco de dados`);
+
+            // Cria elementos de áudio dinamicamente
+            musicContainer.innerHTML = '';
+            musicas = [];
+
+            music.forEach((song, index) => {
+                const audioElement = document.createElement('audio');
+                audioElement.id = `musica${index + 1}`;
+                audioElement.preload = 'metadata';
+                audioElement.volume = volumeOriginal;
+
+                const sourceElement = document.createElement('source');
+                sourceElement.src = song.url;
+                sourceElement.type = 'audio/mpeg';
+
+                audioElement.appendChild(sourceElement);
+                audioElement.innerHTML += 'Seu navegador não suporta o elemento de áudio.';
+
+                musicContainer.appendChild(audioElement);
+                musicas.push(audioElement);
+
+                console.log(`🎵 Música ${index + 1}: ${song.title}`);
+            });
+
+            // Configura eventos para as músicas carregadas
+            setupMusicEvents();
+
+        } catch (error) {
+            console.error('❌ Erro ao carregar músicas:', error);
+            loadFallbackMusic();
+        }
+    }
+
+    // Fallback para músicas locais (se não conseguir carregar do banco)
+    function loadFallbackMusic() {
+        console.log('🔄 Carregando músicas locais como fallback...');
+        
+        // Verifica se já existem elementos de áudio hardcoded
+        const existingAudios = document.querySelectorAll('#musicContainer audio');
+        if (existingAudios.length > 0) {
+            musicas = Array.from(existingAudios);
+            console.log(`✅ ${musicas.length} música(s) local(is) encontrada(s)`);
+        } else {
+            // Cria músicas padrão se não houver nada
+            const defaultMusic = [
+                { title: 'Música 1', url: 'assets/music.mp3' },
+                { title: 'Música 2', url: 'assets/music2.mp3' }
+            ];
+
+            musicContainer.innerHTML = '';
+            musicas = [];
+
+            defaultMusic.forEach((song, index) => {
+                const audioElement = document.createElement('audio');
+                audioElement.id = `musica${index + 1}`;
+                audioElement.preload = 'metadata';
+                audioElement.volume = volumeOriginal;
+
+                const sourceElement = document.createElement('source');
+                sourceElement.src = song.url;
+                sourceElement.type = 'audio/mpeg';
+
+                audioElement.appendChild(sourceElement);
+                audioElement.innerHTML += 'Seu navegador não suporta o elemento de áudio.';
+
+                musicContainer.appendChild(audioElement);
+                musicas.push(audioElement);
+            });
+
+            console.log(`✅ ${musicas.length} música(s) padrão carregada(s)`);
+        }
+
+        setupMusicEvents();
+    }
+
+    // Configura eventos para as músicas
+    function setupMusicEvents() {
+        musicas.forEach((musica, index) => {
+            if (musica) {
+                musica.addEventListener('ended', () => {
+                    if (index < musicas.length - 1) {
+                        // Toca próxima música
+                        proximaMusica();
+                    } else {
+                        // Fim da playlist
+                        musicaAtual = null;
+                        tocando = false;
+                        atualizarBotoes();
+                        criarNotificacao('Playlist finalizada 🎭', 'pause');
+                    }
+                });
+            }
+        });
+    }
+
+    // Carrega as músicas
+    loadMusic();
 
     // Inicializa o estado dos botões
     atualizarBotoes();
@@ -617,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicialização
     console.log('🎵 Sistema de música avançado carregado com sucesso!');
-    console.log(`📀 ${musicas.length} música(s) disponível(is)`);
+    console.log('🎵 Carregando músicas do banco de dados...');
     console.log('⌨️ Controles: Espaço/P = Play/Pause, ← = Anterior, → = Próxima');
     console.log('📸 Sistema de modal de imagens inicializado!');
     console.log('⬆️ Botão "Voltar ao Topo" ativo!');

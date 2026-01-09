@@ -3,6 +3,8 @@
 // Global variables
 let editingMonthId = null;
 let monthsData = [];
+let editingMusicId = null;
+let musicData = [];
 
 // Initialize admin page
 async function initAdmin() {
@@ -34,6 +36,10 @@ async function initAdmin() {
         console.log('📅 Loading months...');
         loadMonths();
 
+        // Load music
+        console.log('🎵 Loading music...');
+        loadMusic();
+
         console.log('✅ Admin initialization complete');
     } catch (error) {
         console.error('❌ Error in initAdmin:', error);
@@ -47,10 +53,16 @@ function setupEventListeners() {
     const cancelButton = document.getElementById('cancelButton');
     const logoutButton = document.getElementById('logoutButton');
 
+    const musicForm = document.getElementById('musicForm');
+    const musicCancelButton = document.getElementById('musicCancelButton');
+
     if (form) form.addEventListener('submit', handleFormSubmit);
     if (addImageButton) addImageButton.addEventListener('click', addImageField);
     if (cancelButton) cancelButton.addEventListener('click', cancelEdit);
     if (logoutButton) logoutButton.addEventListener('click', () => window.Auth.handleLogout());
+
+    if (musicForm) musicForm.addEventListener('submit', handleMusicFormSubmit);
+    if (musicCancelButton) musicCancelButton.addEventListener('click', cancelMusicEdit);
 }
 
 
@@ -561,6 +573,349 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
+// Load music from database
+async function loadMusic() {
+    console.log('🔄 loadMusic called');
+    const musicList = document.getElementById('musicList');
+    if (!musicList) {
+        console.error('❌ musicList element not found');
+        return;
+    }
+    musicList.innerHTML = '<p>Carregando músicas...</p>';
+
+    try {
+        console.log('🔍 Querying music from database...');
+        const { data: music, error } = await window.supabaseClient
+            .from('music')
+            .select('*')
+            .order('music_order', { ascending: true });
+
+        if (error) {
+            console.error('❌ Database query error:', error);
+            throw error;
+        }
+
+        console.log('✅ Database query successful, music:', music?.length || 0);
+        musicData = music;
+        displayMusic(music);
+    } catch (error) {
+        console.error('❌ Error loading music:', error);
+        musicList.innerHTML = '<p class="error">Erro ao carregar músicas. Tente novamente.</p>';
+    }
+}
+
+// Display music in the UI
+function displayMusic(music) {
+    const musicList = document.getElementById('musicList');
+    console.log('📋 Displaying music:', music?.length || 0, 'songs found');
+
+    if (music.length === 0) {
+        musicList.innerHTML = '<p>Nenhuma música cadastrada ainda.</p>';
+        return;
+    }
+
+    const musicGrid = document.createElement('div');
+    musicGrid.className = 'music-grid';
+
+    music.forEach(song => {
+        const musicCard = createMusicCard(song);
+        musicGrid.appendChild(musicCard);
+    });
+
+    musicList.innerHTML = '';
+    musicList.appendChild(musicGrid);
+    console.log('✅ Music displayed successfully');
+
+    // Add drag and drop functionality
+    setupMusicDragAndDrop(musicGrid);
+}
+
+// Create music card element
+function createMusicCard(song) {
+    const card = document.createElement('div');
+    card.className = 'music-card';
+    card.draggable = true;
+    card.setAttribute('data-music-id', song.id);
+
+    card.innerHTML = `
+        <div class="drag-handle">⋮⋮</div>
+        <h3>${song.title}</h3>
+        <audio controls style="width: 100%; margin: 10px 0;">
+            <source src="${song.url}" type="audio/mpeg">
+            Seu navegador não suporta o elemento de áudio.
+        </audio>
+        <div class="music-actions">
+            <button class="edit-btn" onclick="editMusic('${song.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteMusic('${song.id}', '${song.title}')">Excluir</button>
+        </div>
+    `;
+
+    return card;
+}
+
+// Handle music form submission
+async function handleMusicFormSubmit(e) {
+    e.preventDefault();
+
+    const submitButton = document.getElementById('musicSubmitButton');
+    const originalText = submitButton.textContent;
+    submitButton.textContent = 'Salvando...';
+    submitButton.disabled = true;
+
+    try {
+        const musicTitle = document.getElementById('musicTitle').value.trim();
+        const musicFile = document.getElementById('musicFile').files[0];
+
+        if (!musicFile) {
+            throw new Error('Por favor, selecione um arquivo de música.');
+        }
+
+        if (editingMusicId) {
+            // Update existing music
+            await updateMusic(editingMusicId, musicTitle, musicFile);
+        } else {
+            // Create new music
+            await createMusic(musicTitle, musicFile);
+        }
+
+        // Reset form and reload
+        resetMusicForm();
+        loadMusic();
+
+        showMusicMessage('Música salva com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro ao salvar música:', error);
+        showMusicMessage('Erro ao salvar música: ' + error.message, 'error');
+    } finally {
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+    }
+}
+
+// Create new music
+async function createMusic(title, file) {
+    // Generate unique filename
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
+        .from('music')
+        .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    // Get public URL
+    const { data: { publicUrl } } = window.supabaseClient.storage
+        .from('music')
+        .getPublicUrl(fileName);
+
+    // Insert music record
+    const { error: musicError } = await window.supabaseClient
+        .from('music')
+        .insert([{
+            title,
+            url: publicUrl
+        }]);
+
+    if (musicError) throw musicError;
+}
+
+// Update existing music
+async function updateMusic(musicId, title, file) {
+    if (file) {
+        // Upload new file
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
+            .from('music')
+            .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = window.supabaseClient.storage
+            .from('music')
+            .getPublicUrl(fileName);
+
+        // Update music record with new file
+        const { error: musicError } = await window.supabaseClient
+            .from('music')
+            .update({ title, url: publicUrl })
+            .eq('id', musicId);
+
+        if (musicError) throw musicError;
+    } else {
+        // Update only title
+        const { error: musicError } = await window.supabaseClient
+            .from('music')
+            .update({ title })
+            .eq('id', musicId);
+
+        if (musicError) throw musicError;
+    }
+}
+
+// Edit music
+function editMusic(musicId) {
+    const song = musicData.find(m => m.id === musicId);
+    if (!song) return;
+
+    editingMusicId = musicId;
+
+    // Fill form
+    document.getElementById('musicTitle').value = song.title;
+
+    // Update UI
+    document.getElementById('musicFormTitle').textContent = 'Editar Música';
+    document.getElementById('musicSubmitButton').textContent = 'Atualizar Música';
+    document.getElementById('musicCancelButton').style.display = 'inline-block';
+
+    // Scroll to form
+    document.querySelector('#musicForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Delete music
+function deleteMusic(musicId, musicTitle) {
+    const modal = document.getElementById('confirmModal');
+    const title = document.getElementById('confirmTitle');
+    const message = document.getElementById('confirmMessage');
+
+    title.textContent = 'Excluir Música';
+    message.textContent = `Tem certeza que deseja excluir a música "${musicTitle}"? Esta ação não pode ser desfeita.`;
+
+    modal.classList.add('show');
+
+    // Setup confirmation buttons
+    document.getElementById('confirmYes').onclick = async () => {
+        modal.classList.remove('show');
+
+        try {
+            const { error } = await window.supabaseClient
+                .from('music')
+                .delete()
+                .eq('id', musicId);
+
+            if (error) throw error;
+
+            loadMusic();
+            showMusicMessage('Música excluída com sucesso!', 'success');
+        } catch (error) {
+            console.error('Erro ao excluir música:', error);
+            showMusicMessage('Erro ao excluir música: ' + error.message, 'error');
+        }
+    };
+
+    document.getElementById('confirmNo').onclick = () => {
+        modal.classList.remove('show');
+    };
+}
+
+// Cancel music edit
+function cancelMusicEdit() {
+    resetMusicForm();
+}
+
+// Reset music form
+function resetMusicForm() {
+    editingMusicId = null;
+    document.getElementById('musicForm').reset();
+    document.getElementById('musicFormTitle').textContent = 'Adicionar Música';
+    document.getElementById('musicSubmitButton').textContent = 'Salvar Música';
+    document.getElementById('musicCancelButton').style.display = 'none';
+}
+
+// Show music message
+function showMusicMessage(message, type) {
+    const existingMessage = document.querySelector('.success, .error');
+    if (existingMessage) existingMessage.remove();
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = type;
+    messageDiv.textContent = message;
+
+    const form = document.getElementById('musicForm');
+    form.parentNode.insertBefore(messageDiv, form);
+
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 5000);
+}
+
+// Setup music drag and drop functionality
+function setupMusicDragAndDrop(musicGrid) {
+    let draggedElement = null;
+
+    musicGrid.addEventListener('dragstart', (e) => {
+        draggedElement = e.target;
+        draggedElement.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+
+    musicGrid.addEventListener('dragend', (e) => {
+        draggedElement.classList.remove('dragging');
+        draggedElement = null;
+    });
+
+    musicGrid.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        const afterElement = getMusicDragAfterElement(musicGrid, e.clientY);
+        const draggable = document.querySelector('.dragging');
+
+        if (afterElement == null) {
+            musicGrid.appendChild(draggable);
+        } else {
+            musicGrid.insertBefore(draggable, afterElement);
+        }
+    });
+
+    musicGrid.addEventListener('drop', async (e) => {
+        e.preventDefault();
+
+        // Update the order in the database
+        const cards = Array.from(musicGrid.children);
+        const updates = cards.map((card, index) => ({
+            id: card.getAttribute('data-music-id'),
+            music_order: index
+        }));
+
+        try {
+            for (const update of updates) {
+                await window.supabaseClient
+                    .from('music')
+                    .update({ music_order: update.music_order })
+                    .eq('id', update.id);
+            }
+
+            // Reload music to reflect new order
+            loadMusic();
+            showMusicMessage('Ordem das músicas atualizada!', 'success');
+        } catch (error) {
+            console.error('Error updating music order:', error);
+            showMusicMessage('Erro ao atualizar ordem das músicas.', 'error');
+        }
+    });
+}
+
+function getMusicDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.music-card:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
 // Make functions global for onclick handlers
 window.editMonth = editMonth;
 window.deleteMonth = deleteMonth;
+window.editMusic = editMusic;
+window.deleteMusic = deleteMusic;
