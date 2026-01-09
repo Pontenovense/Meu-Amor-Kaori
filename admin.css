@@ -716,6 +716,22 @@
         gap: 20px;
     }
 
+    .music-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .music-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .music-actions button {
+        width: 100%;
+        min-width: auto;
+        min-height: 44px; /* Ensure touch targets are adequate */
+    }
+
     .image-item {
         flex-direction: column;
         align-items: stretch;
@@ -763,6 +779,18 @@
 
     .month-card h3 {
         font-size: 20px;
+    }
+
+    .music-card {
+        padding: 20px;
+    }
+
+    .music-card h3 {
+        font-size: 20px;
+    }
+
+    .music-card audio {
+        margin-bottom: 15px;
     }
 
     .confirm-modal-content {

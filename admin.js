@@ -504,7 +504,11 @@ document.addEventListener('DOMContentLoaded', initAdmin);
 // Setup drag and drop functionality
 function setupDragAndDrop(monthsGrid) {
     let draggedElement = null;
+    let isDragging = false;
+    let touchStartY = 0;
+    let touchStartX = 0;
 
+    // Desktop drag and drop
     monthsGrid.addEventListener('dragstart', (e) => {
         draggedElement = e.target;
         draggedElement.classList.add('dragging');
@@ -532,30 +536,69 @@ function setupDragAndDrop(monthsGrid) {
 
     monthsGrid.addEventListener('drop', async (e) => {
         e.preventDefault();
-
-        // Update the order in the database
-        const cards = Array.from(monthsGrid.children);
-        const updates = cards.map((card, index) => ({
-            id: card.getAttribute('data-month-id'),
-            month_order: index
-        }));
-
-        try {
-            for (const update of updates) {
-                await window.supabaseClient
-                    .from('months')
-                    .update({ month_order: update.month_order })
-                    .eq('id', update.id);
-            }
-
-            // Reload months to reflect new order
-            loadMonths();
-            showMessage('Ordem dos meses atualizada!', 'success');
-        } catch (error) {
-            console.error('Error updating month order:', error);
-            showMessage('Erro ao atualizar ordem dos meses.', 'error');
-        }
+        await updateMonthOrder(monthsGrid);
     });
+
+    // Mobile touch drag and drop
+    monthsGrid.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.drag-handle')) {
+            isDragging = true;
+            draggedElement = e.target.closest('.month-card');
+            draggedElement.classList.add('dragging');
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    monthsGrid.addEventListener('touchmove', (e) => {
+        if (isDragging && draggedElement) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const afterElement = getDragAfterElement(monthsGrid, touch.clientY);
+
+            if (afterElement == null) {
+                monthsGrid.appendChild(draggedElement);
+            } else {
+                monthsGrid.insertBefore(draggedElement, afterElement);
+            }
+        }
+    }, { passive: false });
+
+    monthsGrid.addEventListener('touchend', async (e) => {
+        if (isDragging && draggedElement) {
+            draggedElement.classList.remove('dragging');
+            isDragging = false;
+            await updateMonthOrder(monthsGrid);
+            draggedElement = null;
+        }
+    }, { passive: false });
+}
+
+// Helper function to update month order
+async function updateMonthOrder(monthsGrid) {
+    // Update the order in the database
+    const cards = Array.from(monthsGrid.children);
+    const updates = cards.map((card, index) => ({
+        id: card.getAttribute('data-month-id'),
+        month_order: index
+    }));
+
+    try {
+        for (const update of updates) {
+            await window.supabaseClient
+                .from('months')
+                .update({ month_order: update.month_order })
+                .eq('id', update.id);
+        }
+
+        // Reload months to reflect new order
+        loadMonths();
+        showMessage('Ordem dos meses atualizada!', 'success');
+    } catch (error) {
+        console.error('Error updating month order:', error);
+        showMessage('Erro ao atualizar ordem dos meses.', 'error');
+    }
 }
 
 function getDragAfterElement(container, y) {
@@ -845,7 +888,11 @@ function showMusicMessage(message, type) {
 // Setup music drag and drop functionality
 function setupMusicDragAndDrop(musicGrid) {
     let draggedElement = null;
+    let isDragging = false;
+    let touchStartY = 0;
+    let touchStartX = 0;
 
+    // Desktop drag and drop
     musicGrid.addEventListener('dragstart', (e) => {
         draggedElement = e.target;
         draggedElement.classList.add('dragging');
@@ -873,30 +920,69 @@ function setupMusicDragAndDrop(musicGrid) {
 
     musicGrid.addEventListener('drop', async (e) => {
         e.preventDefault();
-
-        // Update the order in the database
-        const cards = Array.from(musicGrid.children);
-        const updates = cards.map((card, index) => ({
-            id: card.getAttribute('data-music-id'),
-            music_order: index
-        }));
-
-        try {
-            for (const update of updates) {
-                await window.supabaseClient
-                    .from('music')
-                    .update({ music_order: update.music_order })
-                    .eq('id', update.id);
-            }
-
-            // Reload music to reflect new order
-            loadMusic();
-            showMusicMessage('Ordem das músicas atualizada!', 'success');
-        } catch (error) {
-            console.error('Error updating music order:', error);
-            showMusicMessage('Erro ao atualizar ordem das músicas.', 'error');
-        }
+        await updateMusicOrder(musicGrid);
     });
+
+    // Mobile touch drag and drop
+    musicGrid.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.drag-handle')) {
+            isDragging = true;
+            draggedElement = e.target.closest('.music-card');
+            draggedElement.classList.add('dragging');
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    musicGrid.addEventListener('touchmove', (e) => {
+        if (isDragging && draggedElement) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const afterElement = getMusicDragAfterElement(musicGrid, touch.clientY);
+
+            if (afterElement == null) {
+                musicGrid.appendChild(draggedElement);
+            } else {
+                musicGrid.insertBefore(draggedElement, afterElement);
+            }
+        }
+    }, { passive: false });
+
+    musicGrid.addEventListener('touchend', async (e) => {
+        if (isDragging && draggedElement) {
+            draggedElement.classList.remove('dragging');
+            isDragging = false;
+            await updateMusicOrder(musicGrid);
+            draggedElement = null;
+        }
+    }, { passive: false });
+}
+
+// Helper function to update music order
+async function updateMusicOrder(musicGrid) {
+    // Update the order in the database
+    const cards = Array.from(musicGrid.children);
+    const updates = cards.map((card, index) => ({
+        id: card.getAttribute('data-music-id'),
+        music_order: index
+    }));
+
+    try {
+        for (const update of updates) {
+            await window.supabaseClient
+                .from('music')
+                .update({ music_order: update.music_order })
+                .eq('id', update.id);
+        }
+
+        // Reload music to reflect new order
+        loadMusic();
+        showMusicMessage('Ordem das músicas atualizada!', 'success');
+    } catch (error) {
+        console.error('Error updating music order:', error);
+        showMusicMessage('Erro ao atualizar ordem das músicas.', 'error');
+    }
 }
 
 function getMusicDragAfterElement(container, y) {
