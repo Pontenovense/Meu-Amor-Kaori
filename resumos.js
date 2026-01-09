@@ -65,10 +65,29 @@ function displayMonths(months) {
     // Clear loading message
     mainElement.innerHTML = '';
 
+    // Sort months chronologically
+    const sortedMonths = sortMonthsChronologically(months);
+
     // Create sections for each month
-    months.forEach(month => {
+    sortedMonths.forEach(month => {
         const section = createMonthSection(month);
         mainElement.appendChild(section);
+    });
+}
+
+// Sort months in chronological order
+function sortMonthsChronologically(months) {
+    const monthOrder = {
+        'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6,
+        'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12
+    };
+
+    return months.sort((a, b) => {
+        // Normalize month names: remove accents, convert to lowercase
+        const normalizeName = (name) => name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const monthA = monthOrder[normalizeName(a.name)] || 99;
+        const monthB = monthOrder[normalizeName(b.name)] || 99;
+        return monthA - monthB;
     });
 }
 

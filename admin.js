@@ -6,21 +6,38 @@ let monthsData = [];
 
 // Initialize admin page
 async function initAdmin() {
-    // Check authentication
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
-    if (!session) {
-        window.location.href = 'index.html';
-        return;
+    console.log('🚀 initAdmin called');
+    try {
+        // Check authentication
+        console.log('🔐 Checking authentication...');
+        const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
+        if (sessionError) {
+            console.error('❌ Session error:', sessionError);
+        }
+        console.log('📋 Session check result:', session ? 'authenticated' : 'not authenticated');
+
+        if (!session) {
+            console.log('🔄 Redirecting to index.html (not authenticated)');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Initialize auth
+        console.log('🔧 Initializing auth...');
+        window.Auth.init();
+
+        // Setup event listeners
+        console.log('🎧 Setting up event listeners...');
+        setupEventListeners();
+
+        // Load months
+        console.log('📅 Loading months...');
+        loadMonths();
+
+        console.log('✅ Admin initialization complete');
+    } catch (error) {
+        console.error('❌ Error in initAdmin:', error);
     }
-
-    // Initialize auth
-    window.Auth.init();
-
-    // Setup event listeners
-    setupEventListeners();
-
-    // Load months
-    loadMonths();
 }
 
 // Setup event listeners
@@ -30,20 +47,26 @@ function setupEventListeners() {
     const cancelButton = document.getElementById('cancelButton');
     const logoutButton = document.getElementById('logoutButton');
 
-    form.addEventListener('submit', handleFormSubmit);
-    addImageButton.addEventListener('click', addImageField);
-    cancelButton.addEventListener('click', cancelEdit);
-    logoutButton.addEventListener('click', () => window.Auth.handleLogout());
+    if (form) form.addEventListener('submit', handleFormSubmit);
+    if (addImageButton) addImageButton.addEventListener('click', addImageField);
+    if (cancelButton) cancelButton.addEventListener('click', cancelEdit);
+    if (logoutButton) logoutButton.addEventListener('click', () => window.Auth.handleLogout());
 }
 
 
 
 // Load months from database
 async function loadMonths() {
+    console.log('🔄 loadMonths called');
     const monthsList = document.getElementById('monthsList');
+    if (!monthsList) {
+        console.error('❌ monthsList element not found');
+        return;
+    }
     monthsList.innerHTML = '<p>Carregando meses...</p>';
 
     try {
+        console.log('🔍 Querying months from database...');
         const { data: months, error } = await window.supabaseClient
             .from('months')
             .select(`
@@ -52,12 +75,16 @@ async function loadMonths() {
             `)
             .order('name');
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Database query error:', error);
+            throw error;
+        }
 
+        console.log('✅ Database query successful, months:', months?.length || 0);
         monthsData = months;
         displayMonths(months);
     } catch (error) {
-        console.error('Erro ao carregar meses:', error);
+        console.error('❌ Error loading months:', error);
         monthsList.innerHTML = '<p class="error">Erro ao carregar meses. Tente novamente.</p>';
     }
 }
@@ -65,6 +92,7 @@ async function loadMonths() {
 // Display months in the UI
 function displayMonths(months) {
     const monthsList = document.getElementById('monthsList');
+    console.log('📋 Displaying months:', months?.length || 0, 'months found');
 
     if (months.length === 0) {
         monthsList.innerHTML = '<p>Nenhum mês cadastrado ainda.</p>';
@@ -74,13 +102,34 @@ function displayMonths(months) {
     const monthsGrid = document.createElement('div');
     monthsGrid.className = 'months-grid';
 
-    months.forEach(month => {
+    // Sort months chronologically
+    const sortedMonths = sortMonthsChronologically(months);
+    console.log('📅 Months sorted chronologically:', sortedMonths.map(m => m.name));
+
+    sortedMonths.forEach(month => {
         const monthCard = createMonthCard(month);
         monthsGrid.appendChild(monthCard);
     });
 
     monthsList.innerHTML = '';
     monthsList.appendChild(monthsGrid);
+    console.log('✅ Months displayed successfully');
+}
+
+// Sort months in chronological order
+function sortMonthsChronologically(months) {
+    const monthOrder = {
+        'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6,
+        'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12
+    };
+
+    return months.sort((a, b) => {
+        // Normalize month names: remove accents, convert to lowercase
+        const normalizeName = (name) => name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const monthA = monthOrder[normalizeName(a.name)] || 99;
+        const monthB = monthOrder[normalizeName(b.name)] || 99;
+        return monthA - monthB;
+    });
 }
 
 // Create month card element
@@ -89,7 +138,7 @@ function createMonthCard(month) {
     card.className = 'month-card';
 
     const imagesHtml = month.images && month.images.length > 0
-        ? month.images.slice(0, 4).map(img => `<img src="${img.url}" alt="${img.alt || ''}" class="month-image-thumb">`).join('')
+        ? month.images.slice(0, 4).map(img => `<img src="${img.url}" alt="${img.description || ''}" class="month-image-thumb">`).join('')
         : '<p style="color: #999; font-style: italic;">Sem imagens</p>';
 
     card.innerHTML = `
@@ -140,16 +189,20 @@ async function handleFormSubmit(e) {
         const monthName = document.getElementById('monthName').value.trim();
         const monthDescription = document.getElementById('monthDescription').value.trim();
 
-        // Get image files
-        const imageFiles = Array.from(document.querySelectorAll('.imageFile')).filter(input => input.files[0]);
-        const imageDescs = Array.from(document.querySelectorAll('.imageDesc'));
+        // Get image data from form
+        const imageItems = Array.from(document.querySelectorAll('.image-item'));
+        const imageData = imageItems.map(item => ({
+            file: item.querySelector('.imageFile').files[0] || null,
+            description: item.querySelector('.imageDesc').value || '',
+            existingId: item.getAttribute('data-existing-id') || null
+        }));
 
         if (editingMonthId) {
             // Update existing month
-            await updateMonth(editingMonthId, monthName, monthDescription, imageFiles, imageDescs);
+            await updateMonth(editingMonthId, monthName, monthDescription, imageData);
         } else {
             // Create new month
-            await createMonth(monthName, monthDescription, imageFiles, imageDescs);
+            await createMonth(monthName, monthDescription, imageData);
         }
 
         // Reset form and reload
@@ -167,7 +220,7 @@ async function handleFormSubmit(e) {
 }
 
 // Create new month
-async function createMonth(name, description, imageFiles, imageDescs) {
+async function createMonth(name, description, imageData) {
     // Insert month
     const { data: month, error: monthError } = await window.supabaseClient
         .from('months')
@@ -178,13 +231,14 @@ async function createMonth(name, description, imageFiles, imageDescs) {
     if (monthError) throw monthError;
 
     // Upload images if any
-    if (imageFiles.length > 0) {
-        await uploadImages(month.id, imageFiles, imageDescs);
+    const imagesWithFiles = imageData.filter(img => img.file);
+    if (imagesWithFiles.length > 0) {
+        await uploadImages(month.id, imagesWithFiles);
     }
 }
 
 // Update existing month
-async function updateMonth(monthId, name, description, imageFiles, imageDescs) {
+async function updateMonth(monthId, name, description, imageData) {
     // Update month
     const { error: monthError } = await window.supabaseClient
         .from('months')
@@ -193,17 +247,29 @@ async function updateMonth(monthId, name, description, imageFiles, imageDescs) {
 
     if (monthError) throw monthError;
 
-    // Upload new images if any
-    if (imageFiles.length > 0) {
-        await uploadImages(monthId, imageFiles, imageDescs);
+    // Delete all existing images for this month
+    const { error: deleteError } = await window.supabaseClient
+        .from('images')
+        .delete()
+        .eq('month_id', monthId);
+
+    if (deleteError) {
+        console.error('Error deleting existing images:', deleteError);
+        // Continue anyway
+    }
+
+    // Upload new images
+    const imagesWithFiles = imageData.filter(img => img.file);
+    if (imagesWithFiles.length > 0) {
+        await uploadImages(monthId, imagesWithFiles);
     }
 }
 
 // Upload images to Supabase Storage
-async function uploadImages(monthId, imageFiles, imageDescs) {
-    for (let i = 0; i < imageFiles.length; i++) {
-        const file = imageFiles[i].files[0];
-        const desc = imageDescs[i]?.value || '';
+async function uploadImages(monthId, imageData) {
+    for (let i = 0; i < imageData.length; i++) {
+        const file = imageData[i].file;
+        const desc = imageData[i].description || '';
 
         if (!file) continue;
 
@@ -249,9 +315,50 @@ function editMonth(monthId) {
     document.getElementById('monthName').value = month.name;
     document.getElementById('monthDescription').value = month.description || '';
 
-    // Clear existing image fields
+    // Clear existing image fields and populate with current images
     const container = document.getElementById('imagesContainer');
     container.innerHTML = '';
+
+    // Add existing images for editing
+    if (month.images && month.images.length > 0) {
+        // Sort images by order
+        const sortedImages = month.images.sort((a, b) => (a.image_order || 0) - (b.image_order || 0));
+
+        sortedImages.forEach((image, index) => {
+            const imageItem = document.createElement('div');
+            imageItem.className = 'image-item';
+            imageItem.setAttribute('data-existing-id', image.id);
+
+            imageItem.innerHTML = `
+                <input type="file" accept="image/*" class="imageFile">
+                <input type="text" placeholder="Descrição da imagem (opcional)" class="imageDesc" value="${image.description || image.alt || ''}">
+                <button type="button" class="removeImage">Remover</button>
+                <div class="existing-image">
+                    <img src="${image.url}" alt="Imagem atual" style="max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 4px;">
+                    <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Imagem atual</p>
+                </div>
+            `;
+
+            // Add remove functionality
+            imageItem.querySelector('.removeImage').addEventListener('click', () => {
+                imageItem.remove();
+            });
+
+            container.appendChild(imageItem);
+        });
+    } else {
+        // Add empty image field if no existing images
+        const imageItem = document.createElement('div');
+        imageItem.className = 'image-item';
+
+        imageItem.innerHTML = `
+            <input type="file" accept="image/*" class="imageFile">
+            <input type="text" placeholder="Descrição da imagem (opcional)" class="imageDesc">
+            <button type="button" class="removeImage" style="display: none;">Remover</button>
+        `;
+
+        container.appendChild(imageItem);
+    }
 
     // Update UI
     document.getElementById('formTitle').textContent = 'Editar Mês';
