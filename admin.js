@@ -1,5 +1,4 @@
 // Use the global Supabase client
-const supabase = window.supabaseClient;
 
 // Global variables
 let editingMonthId = null;
@@ -8,7 +7,7 @@ let monthsData = [];
 // Initialize admin page
 async function initAdmin() {
     // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (!session) {
         window.location.href = 'index.html';
         return;
@@ -45,7 +44,7 @@ async function loadMonths() {
     monthsList.innerHTML = '<p>Carregando meses...</p>';
 
     try {
-        const { data: months, error } = await supabase
+        const { data: months, error } = await window.supabaseClient
             .from('months')
             .select(`
                 *,
@@ -170,7 +169,7 @@ async function handleFormSubmit(e) {
 // Create new month
 async function createMonth(name, description, imageFiles, imageDescs) {
     // Insert month
-    const { data: month, error: monthError } = await supabase
+    const { data: month, error: monthError } = await window.supabaseClient
         .from('months')
         .insert([{ name, description }])
         .select()
@@ -187,7 +186,7 @@ async function createMonth(name, description, imageFiles, imageDescs) {
 // Update existing month
 async function updateMonth(monthId, name, description, imageFiles, imageDescs) {
     // Update month
-    const { error: monthError } = await supabase
+    const { error: monthError } = await window.supabaseClient
         .from('months')
         .update({ name, description })
         .eq('id', monthId);
@@ -213,19 +212,19 @@ async function uploadImages(monthId, imageFiles, imageDescs) {
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
         // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
             .from('images')
             .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
         // Get public URL
-        const { data: { publicUrl } } = supabase.storage
+        const { data: { publicUrl } } = window.supabaseClient.storage
             .from('images')
             .getPublicUrl(fileName);
 
         // Insert image record
-        const { error: imageError } = await supabase
+        const { error: imageError } = await window.supabaseClient
             .from('images')
             .insert([{
                 month_id: monthId,
@@ -279,7 +278,7 @@ function deleteMonth(monthId, monthName) {
         modal.classList.remove('show');
 
         try {
-            const { error } = await supabase
+            const { error } = await window.supabaseClient
                 .from('months')
                 .delete()
                 .eq('id', monthId);

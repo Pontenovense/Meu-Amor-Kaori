@@ -1,5 +1,4 @@
 // Use the global Supabase client
-const supabase = window.supabaseClient;
 
 // Load months when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -13,7 +12,7 @@ async function loadMonths() {
 
     try {
         console.log('🔍 Fazendo query no Supabase...');
-        const { data: months, error } = await supabase
+        const { data: months, error } = await window.supabaseClient
             .from('months')
             .select(`
                 *,
