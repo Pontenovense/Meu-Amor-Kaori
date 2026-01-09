@@ -114,9 +114,12 @@ function displayMonths(months) {
     monthsList.innerHTML = '';
     monthsList.appendChild(monthsGrid);
     console.log('✅ Months displayed successfully');
+
+    // Add drag and drop functionality
+    setupDragAndDrop(monthsGrid);
 }
 
-// Sort months in chronological order
+// Sort months by order, then chronologically
 function sortMonthsChronologically(months) {
     const monthOrder = {
         'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6,
@@ -124,7 +127,11 @@ function sortMonthsChronologically(months) {
     };
 
     return months.sort((a, b) => {
-        // Normalize month names: remove accents, convert to lowercase
+        // First sort by month_order
+        if (a.month_order !== b.month_order) {
+            return (a.month_order || 0) - (b.month_order || 0);
+        }
+        // Then by name
         const normalizeName = (name) => name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const monthA = monthOrder[normalizeName(a.name)] || 99;
         const monthB = monthOrder[normalizeName(b.name)] || 99;
@@ -136,12 +143,15 @@ function sortMonthsChronologically(months) {
 function createMonthCard(month) {
     const card = document.createElement('div');
     card.className = 'month-card';
+    card.draggable = true;
+    card.setAttribute('data-month-id', month.id);
 
     const imagesHtml = month.images && month.images.length > 0
         ? month.images.slice(0, 4).map(img => `<img src="${img.url}" alt="${img.description || ''}" class="month-image-thumb">`).join('')
         : '<p style="color: #999; font-style: italic;">Sem imagens</p>';
 
     card.innerHTML = `
+        <div class="drag-handle">⋮⋮</div>
         <h3>${month.name}</h3>
         <p>${month.description || 'Sem descrição'}</p>
         <div class="month-images">
@@ -478,6 +488,78 @@ function showMessage(message, type) {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initAdmin);
+
+// Setup drag and drop functionality
+function setupDragAndDrop(monthsGrid) {
+    let draggedElement = null;
+
+    monthsGrid.addEventListener('dragstart', (e) => {
+        draggedElement = e.target;
+        draggedElement.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+
+    monthsGrid.addEventListener('dragend', (e) => {
+        draggedElement.classList.remove('dragging');
+        draggedElement = null;
+    });
+
+    monthsGrid.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        const afterElement = getDragAfterElement(monthsGrid, e.clientY);
+        const draggable = document.querySelector('.dragging');
+
+        if (afterElement == null) {
+            monthsGrid.appendChild(draggable);
+        } else {
+            monthsGrid.insertBefore(draggable, afterElement);
+        }
+    });
+
+    monthsGrid.addEventListener('drop', async (e) => {
+        e.preventDefault();
+
+        // Update the order in the database
+        const cards = Array.from(monthsGrid.children);
+        const updates = cards.map((card, index) => ({
+            id: card.getAttribute('data-month-id'),
+            month_order: index
+        }));
+
+        try {
+            for (const update of updates) {
+                await window.supabaseClient
+                    .from('months')
+                    .update({ month_order: update.month_order })
+                    .eq('id', update.id);
+            }
+
+            // Reload months to reflect new order
+            loadMonths();
+            showMessage('Ordem dos meses atualizada!', 'success');
+        } catch (error) {
+            console.error('Error updating month order:', error);
+            showMessage('Erro ao atualizar ordem dos meses.', 'error');
+        }
+    });
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.month-card:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
 
 // Make functions global for onclick handlers
 window.editMonth = editMonth;

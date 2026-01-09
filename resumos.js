@@ -75,7 +75,7 @@ function displayMonths(months) {
     });
 }
 
-// Sort months in chronological order
+// Sort months by order, then chronologically
 function sortMonthsChronologically(months) {
     const monthOrder = {
         'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6,
@@ -83,7 +83,11 @@ function sortMonthsChronologically(months) {
     };
 
     return months.sort((a, b) => {
-        // Normalize month names: remove accents, convert to lowercase
+        // First sort by month_order
+        if (a.month_order !== b.month_order) {
+            return (a.month_order || 0) - (b.month_order || 0);
+        }
+        // Then by name
         const normalizeName = (name) => name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const monthA = monthOrder[normalizeName(a.name)] || 99;
         const monthB = monthOrder[normalizeName(b.name)] || 99;

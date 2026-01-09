@@ -166,8 +166,9 @@
 /* Image Items */
 .image-item {
     display: flex;
+    flex-direction: column;
     gap: 15px;
-    align-items: center;
+    align-items: stretch;
     margin-bottom: 15px;
     padding: 20px;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -184,7 +185,7 @@
 }
 
 .image-item input[type="file"] {
-    flex: 1;
+    width: 100%;
     padding: 10px;
     border: 1px solid var(--admin-border);
     border-radius: var(--admin-radius-small);
@@ -192,7 +193,7 @@
 }
 
 .image-item input[type="text"] {
-    flex: 2;
+    width: 100%;
     padding: 12px 15px;
     border: 1px solid var(--admin-border);
     border-radius: var(--admin-radius-small);
@@ -336,6 +337,28 @@
     transition: var(--admin-transition);
     position: relative;
     overflow: hidden;
+    cursor: grab;
+}
+
+.month-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+/* Drag Handle */
+.drag-handle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+    color: var(--admin-gray);
+    cursor: grab;
+    user-select: none;
+    transition: var(--admin-transition);
+}
+
+.drag-handle:hover {
+    color: var(--admin-primary);
 }
 
 .month-card::before {
