@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/:page*.html",
+      "destination": "/:page*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/resumo", "destination": "/resumo.html" },
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
+}
