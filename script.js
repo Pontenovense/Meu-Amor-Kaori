@@ -136,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     criarNotificacao('Erro ao tocar música', 'error');
                 });
             } else if (musicaAtual.type === 'youtube') {
+                musicaAtual.player.seekTo(0); // Restart from beginning
                 musicaAtual.player.playVideo();
                 tocando = true;
                 atualizarBotoes();
