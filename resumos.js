@@ -83,9 +83,11 @@ function sortMonthsChronologically(months) {
     };
 
     return months.sort((a, b) => {
-        // First sort by month_order
-        if (a.month_order !== b.month_order) {
-            return (a.month_order || 0) - (b.month_order || 0);
+        // First sort by month_order (null treated as 999 to appear last)
+        const orderA = a.month_order !== null && a.month_order !== undefined ? a.month_order : 999;
+        const orderB = b.month_order !== null && b.month_order !== undefined ? b.month_order : 999;
+        if (orderA !== orderB) {
+            return orderA - orderB;
         }
         // Then by name
         const normalizeName = (name) => name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');

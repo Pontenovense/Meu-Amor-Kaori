@@ -109,27 +109,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Para música atual se estiver tocando
         if (musicaAtual && tocando) {
-            fadeOut(musicaAtual, 300);
+            if (musicaAtual.type === 'audio') {
+                fadeOut(musicaAtual.element, 300);
+            } else if (musicaAtual.type === 'youtube') {
+                musicaAtual.player.pauseVideo();
+            }
         }
 
         musicaAtualIndex = index;
         musicaAtual = musicas[musicaAtualIndex];
 
         try {
-            musicaAtual.currentTime = 0; // Reinicia a música
-            musicaAtual.play().then(() => {
+            if (musicaAtual.type === 'audio') {
+                musicaAtual.element.currentTime = 0; // Reinicia a música
+                musicaAtual.element.play().then(() => {
+                    tocando = true;
+                    fadeIn(musicaAtual.element);
+                    atualizarBotoes();
+
+                    if (showNotification) {
+                        const musicaNum = musicaAtualIndex + 1;
+                        criarNotificacao(`Tocando música ${musicaNum} 🎵`, 'play');
+                    }
+                }).catch(error => {
+                    console.error('Erro ao reproduzir música:', error);
+                    criarNotificacao('Erro ao tocar música', 'error');
+                });
+            } else if (musicaAtual.type === 'youtube') {
+                musicaAtual.player.playVideo();
                 tocando = true;
-                fadeIn(musicaAtual);
                 atualizarBotoes();
-                
+
                 if (showNotification) {
                     const musicaNum = musicaAtualIndex + 1;
                     criarNotificacao(`Tocando música ${musicaNum} 🎵`, 'play');
                 }
-            }).catch(error => {
-                console.error('Erro ao reproduzir música:', error);
-                criarNotificacao('Erro ao tocar música', 'error');
-            });
+            }
         } catch (error) {
             console.error('Erro ao iniciar música:', error);
             criarNotificacao('Erro ao iniciar música', 'error');
@@ -146,18 +161,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             if (tocando) {
-                fadeOut(musicaAtual, 500);
+                if (musicaAtual.type === 'audio') {
+                    fadeOut(musicaAtual.element, 500);
+                } else if (musicaAtual.type === 'youtube') {
+                    musicaAtual.player.pauseVideo();
+                }
                 tocando = false;
                 criarNotificacao('Música pausada ⏸️', 'pause');
             } else {
-                musicaAtual.play().then(() => {
+                if (musicaAtual.type === 'audio') {
+                    musicaAtual.element.play().then(() => {
+                        tocando = true;
+                        fadeIn(musicaAtual.element);
+                        criarNotificacao('Música retomada! 🎶', 'play');
+                    }).catch(error => {
+                        console.error('Erro ao despausar música:', error);
+                        criarNotificacao('Erro ao despausar música', 'error');
+                    });
+                } else if (musicaAtual.type === 'youtube') {
+                    musicaAtual.player.playVideo();
                     tocando = true;
-                    fadeIn(musicaAtual);
                     criarNotificacao('Música retomada! 🎶', 'play');
-                }).catch(error => {
-                    console.error('Erro ao despausar música:', error);
-                    criarNotificacao('Erro ao despausar música', 'error');
-                });
+                }
             }
             atualizarBotoes();
         } catch (error) {
@@ -300,36 +325,139 @@ document.addEventListener('DOMContentLoaded', function() {
             musicData = music;
             console.log(`✅ ${music.length} música(s) carregada(s) do banco de dados`);
 
-            // Cria elementos de áudio dinamicamente
+            // Cria elementos de áudio/YouTube dinamicamente
             musicContainer.innerHTML = '';
             musicas = [];
 
             music.forEach((song, index) => {
-                const audioElement = document.createElement('audio');
-                audioElement.id = `musica${index + 1}`;
-                audioElement.preload = 'metadata';
-                audioElement.volume = volumeOriginal;
+                if (song.url.includes('youtube.com') || song.url.includes('youtu.be')) {
+                    // YouTube video - create iframe container
+                    const container = document.createElement('div');
+                    container.id = `musica${index + 1}`;
+                    container.className = 'youtube-container';
+                    container.style.display = 'none';
 
-                const sourceElement = document.createElement('source');
-                sourceElement.src = song.url;
-                sourceElement.type = 'audio/mpeg';
+                    const iframe = document.createElement('iframe');
+                    iframe.id = `youtube${index + 1}`;
+                    iframe.width = '560';
+                    iframe.height = '315';
+                    iframe.src = `https://www.youtube.com/embed/${getYouTubeVideoId(song.url)}?enablejsapi=1&origin=${window.location.origin}`;
+                    iframe.frameBorder = '0';
+                    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                    iframe.allowFullscreen = true;
 
-                audioElement.appendChild(sourceElement);
-                audioElement.innerHTML += 'Seu navegador não suporta o elemento de áudio.';
+                    container.appendChild(iframe);
+                    musicContainer.appendChild(container);
 
-                musicContainer.appendChild(audioElement);
-                musicas.push(audioElement);
+                    // Store reference (will be initialized by YouTube API)
+                    musicas.push({ type: 'youtube', element: container, iframe: iframe, title: song.title, index: index });
 
-                console.log(`🎵 Música ${index + 1}: ${song.title}`);
+                    console.log(`🎵 YouTube Música ${index + 1}: ${song.title}`);
+                } else {
+                    // Regular audio file
+                    const audioElement = document.createElement('audio');
+                    audioElement.id = `musica${index + 1}`;
+                    audioElement.preload = 'metadata';
+                    audioElement.volume = volumeOriginal;
+
+                    const sourceElement = document.createElement('source');
+                    sourceElement.src = song.url;
+                    sourceElement.type = 'audio/mpeg';
+
+                    audioElement.appendChild(sourceElement);
+                    audioElement.innerHTML += 'Seu navegador não suporta o elemento de áudio.';
+
+                    musicContainer.appendChild(audioElement);
+                    musicas.push({ type: 'audio', element: audioElement, title: song.title, index: index });
+
+                    console.log(`🎵 Áudio Música ${index + 1}: ${song.title}`);
+                }
             });
 
             // Configura eventos para as músicas carregadas
             setupMusicEvents();
 
+            // Initialize YouTube players if any
+            if (musicas.some(m => m.type === 'youtube')) {
+                initializeYouTubePlayers();
+            }
+
         } catch (error) {
             console.error('❌ Erro ao carregar músicas:', error);
             loadFallbackMusic();
         }
+    }
+
+    // Extract YouTube video ID from URL
+    function getYouTubeVideoId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length == 11) ? match[2] : null;
+    }
+
+    // YouTube players array
+    let youtubePlayers = [];
+
+    // Initialize YouTube API and players
+    function initializeYouTubePlayers() {
+        if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+            // Load YouTube API if not loaded
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+            window.onYouTubeIframeAPIReady = function() {
+                createYouTubePlayers();
+            };
+        } else {
+            createYouTubePlayers();
+        }
+    }
+
+    function createYouTubePlayers() {
+        youtubePlayers = [];
+
+        musicas.forEach((musica, index) => {
+            if (musica.type === 'youtube') {
+                const player = new YT.Player(`youtube${index + 1}`, {
+                    events: {
+                        'onReady': onYouTubePlayerReady,
+                        'onStateChange': onYouTubePlayerStateChange,
+                        'onError': onYouTubePlayerError
+                    }
+                });
+                youtubePlayers.push(player);
+                musica.player = player;
+            }
+        });
+    }
+
+    function onYouTubePlayerReady(event) {
+        console.log('YouTube player ready');
+    }
+
+    function onYouTubePlayerStateChange(event) {
+        // Handle state changes - advance to next song when YouTube video ends
+        if (event.data === YT.PlayerState.ENDED) {
+            // Find the index of this player
+            const playerIndex = youtubePlayers.findIndex(p => p === event.target);
+            if (playerIndex !== -1 && playerIndex < musicas.length - 1) {
+                // Play next song
+                proximaMusica();
+            } else {
+                // End of playlist
+                musicaAtual = null;
+                tocando = false;
+                atualizarBotoes();
+                criarNotificacao('Playlist finalizada 🎭', 'pause');
+            }
+        }
+    }
+
+    function onYouTubePlayerError(event) {
+        console.error('YouTube player error:', event.data);
+        criarNotificacao('Erro ao carregar vídeo do YouTube', 'error');
     }
 
     // Fallback para músicas locais (se não conseguir carregar do banco)
@@ -377,8 +505,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configura eventos para as músicas
     function setupMusicEvents() {
         musicas.forEach((musica, index) => {
-            if (musica) {
-                musica.addEventListener('ended', () => {
+            if (musica && musica.type === 'audio') {
+                musica.element.addEventListener('ended', () => {
                     if (index < musicas.length - 1) {
                         // Toca próxima música
                         proximaMusica();

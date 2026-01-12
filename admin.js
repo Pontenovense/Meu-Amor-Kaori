@@ -5,6 +5,8 @@ let editingMonthId = null;
 let monthsData = [];
 let editingMusicId = null;
 let musicData = [];
+let selectedVideoId = null;
+let selectedVideoTitle = null;
 
 // Initialize admin page
 async function initAdmin() {
@@ -63,9 +65,103 @@ function setupEventListeners() {
 
     if (musicForm) musicForm.addEventListener('submit', handleMusicFormSubmit);
     if (musicCancelButton) musicCancelButton.addEventListener('click', cancelMusicEdit);
+
+    // Music option toggles
+    document.querySelectorAll('input[name="musicOption"]').forEach(radio => {
+        radio.addEventListener('change', toggleMusicFields);
+    });
+    document.getElementById('searchMusicButton').addEventListener('click', searchYouTube);
 }
 
+// Toggle music fields based on selected option
+function toggleMusicFields() {
+    const uploadOption = document.getElementById('uploadOption').checked;
+    document.getElementById('uploadFields').style.display = uploadOption ? 'block' : 'none';
+    document.getElementById('searchFields').style.display = uploadOption ? 'none' : 'block';
+    document.getElementById('musicFile').required = uploadOption;
+    // Hide results if switching
+    document.getElementById('searchResults').style.display = 'none';
+    selectedVideoId = null;
+    selectedVideoTitle = null;
+}
 
+// Search YouTube for music
+async function searchYouTube() {
+    const query = document.getElementById('musicSearch').value.trim();
+    if (!query) {
+        showMusicMessage('Por favor, digite um nome de música para buscar.', 'error');
+        return;
+    }
+
+    const apiKey = 'AIzaSyDPCXTH0fXFlCjXpcppSR7pazm871yZXms'; // Replace with your YouTube Data API v3 key
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query + ' music')}&type=video&key=${apiKey}&maxResults=5`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        displaySearchResults(data.items);
+    } catch (error) {
+        console.error('Error searching YouTube:', error);
+        showMusicMessage('Erro ao buscar no YouTube: ' + error.message, 'error');
+    }
+}
+
+// Display search results
+function displaySearchResults(items) {
+    const resultsList = document.getElementById('resultsList');
+    resultsList.innerHTML = '';
+
+    if (items.length === 0) {
+        resultsList.innerHTML = '<p>Nenhum resultado encontrado.</p>';
+        document.getElementById('searchResults').style.display = 'block';
+        return;
+    }
+
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'search-result';
+        div.innerHTML = `
+            <img src="${item.snippet.thumbnails.default.url}" alt="${item.snippet.title}">
+            <div>
+                <h4>${item.snippet.title}</h4>
+                <p>${item.snippet.channelTitle}</p>
+                <button class="select-song" data-video-id="${item.id.videoId}" data-title="${item.snippet.title}">Selecionar</button>
+            </div>
+        `;
+        resultsList.appendChild(div);
+    });
+
+    document.getElementById('searchResults').style.display = 'block';
+
+    // Add event listeners for select buttons
+    document.querySelectorAll('.select-song').forEach(btn => {
+        btn.addEventListener('click', selectSong);
+    });
+}
+
+// Select a song from search results
+function selectSong(e) {
+    selectedVideoId = e.target.getAttribute('data-video-id');
+    selectedVideoTitle = e.target.getAttribute('data-title');
+
+    // Set the title input
+    document.getElementById('musicTitle').value = selectedVideoTitle;
+
+    // Update buttons
+    document.querySelectorAll('.select-song').forEach(b => {
+        b.textContent = 'Selecionar';
+        b.classList.remove('selected');
+    });
+    e.target.textContent = 'Selecionado';
+    e.target.classList.add('selected');
+
+    showMusicMessage('Música selecionada! Clique em "Salvar Música" para adicionar.', 'success');
+}
 
 // Load months from database
 async function loadMonths() {
@@ -139,9 +235,11 @@ function sortMonthsChronologically(months) {
     };
 
     return months.sort((a, b) => {
-        // First sort by month_order
-        if (a.month_order !== b.month_order) {
-            return (a.month_order || 0) - (b.month_order || 0);
+        // First sort by month_order (null treated as 999 to appear last)
+        const orderA = a.month_order !== null && a.month_order !== undefined ? a.month_order : 999;
+        const orderB = b.month_order !== null && b.month_order !== undefined ? b.month_order : 999;
+        if (orderA !== orderB) {
+            return orderA - orderB;
         }
         // Then by name
         const normalizeName = (name) => name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -243,22 +341,10 @@ async function handleFormSubmit(e) {
 
 // Create new month
 async function createMonth(name, description, imageData) {
-    // Get the max month_order
-    const { data: maxOrderData, error: maxError } = await window.supabaseClient
-        .from('months')
-        .select('month_order')
-        .order('month_order', { ascending: false })
-        .limit(1);
-
-    if (maxError) throw maxError;
-
-    const maxOrder = maxOrderData && maxOrderData.length > 0 ? maxOrderData[0].month_order : 0;
-    const newOrder = maxOrder + 1;
-
-    // Insert month
+    // Insert month with month_order = null so it appears last
     const { data: month, error: monthError } = await window.supabaseClient
         .from('months')
-        .insert([{ name, description, month_order: newOrder }])
+        .insert([{ name, description, month_order: null }])
         .select()
         .single();
 
@@ -762,13 +848,23 @@ function createMusicCard(song) {
     card.draggable = true;
     card.setAttribute('data-music-id', song.id);
 
+    let mediaHtml;
+    if (song.url.includes('youtube.com') || song.url.includes('youtu.be')) {
+        // YouTube video
+        const videoId = song.url.split('v=')[1] || song.url.split('/').pop();
+        mediaHtml = `<iframe width="100%" height="200" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    } else {
+        // Audio file
+        mediaHtml = `<audio controls style="width: 100%; margin: 10px 0;">
+            <source src="${song.url}" type="audio/mpeg">
+            Seu navegador não suporta o elemento de áudio.
+        </audio>`;
+    }
+
     card.innerHTML = `
         <div class="drag-handle">⋮⋮</div>
         <h3>${song.title}</h3>
-        <audio controls style="width: 100%; margin: 10px 0;">
-            <source src="${song.url}" type="audio/mpeg">
-            Seu navegador não suporta o elemento de áudio.
-        </audio>
+        ${mediaHtml}
         <div class="music-actions">
             <button class="edit-btn" onclick="editMusic('${song.id}')">Editar</button>
             <button class="delete-btn" onclick="deleteMusic('${song.id}', '${song.title}')">Excluir</button>
@@ -789,18 +885,35 @@ async function handleMusicFormSubmit(e) {
 
     try {
         const musicTitle = document.getElementById('musicTitle').value.trim();
-        const musicFile = document.getElementById('musicFile').files[0];
+        const uploadOption = document.getElementById('uploadOption').checked;
 
-        if (!musicFile) {
-            throw new Error('Por favor, selecione um arquivo de música.');
-        }
+        if (uploadOption) {
+            // Upload option
+            const musicFile = document.getElementById('musicFile').files[0];
+            if (!musicFile) {
+                throw new Error('Por favor, selecione um arquivo de música.');
+            }
 
-        if (editingMusicId) {
-            // Update existing music
-            await updateMusic(editingMusicId, musicTitle, musicFile);
+            if (editingMusicId) {
+                // Update existing music
+                await updateMusic(editingMusicId, musicTitle, musicFile);
+            } else {
+                // Create new music
+                await createMusic(musicTitle, musicFile);
+            }
         } else {
-            // Create new music
-            await createMusic(musicTitle, musicFile);
+            // Search option
+            if (!selectedVideoId) {
+                throw new Error('Por favor, busque e selecione uma música.');
+            }
+
+            if (editingMusicId) {
+                // Update existing music with YouTube URL
+                await updateMusicWithYouTube(editingMusicId, musicTitle, selectedVideoId);
+            } else {
+                // Create new music with YouTube URL
+                await createMusicWithYouTube(musicTitle, selectedVideoId);
+            }
         }
 
         // Reset form and reload
@@ -879,6 +992,34 @@ async function updateMusic(musicId, title, file) {
 
         if (musicError) throw musicError;
     }
+}
+
+// Create new music with YouTube URL
+async function createMusicWithYouTube(title, videoId) {
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+    // Insert music record
+    const { error: musicError } = await window.supabaseClient
+        .from('music')
+        .insert([{
+            title,
+            url: youtubeUrl
+        }]);
+
+    if (musicError) throw musicError;
+}
+
+// Update existing music with YouTube URL
+async function updateMusicWithYouTube(musicId, title, videoId) {
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+    // Update music record with YouTube URL
+    const { error: musicError } = await window.supabaseClient
+        .from('music')
+        .update({ title, url: youtubeUrl })
+        .eq('id', musicId);
+
+    if (musicError) throw musicError;
 }
 
 // Edit music
@@ -982,6 +1123,12 @@ function resetMusicForm() {
     document.getElementById('musicFormTitle').textContent = 'Adicionar Música';
     document.getElementById('musicSubmitButton').textContent = 'Salvar Música';
     document.getElementById('musicCancelButton').style.display = 'none';
+    document.getElementById('uploadFields').style.display = 'block';
+    document.getElementById('searchFields').style.display = 'none';
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('resultsList').innerHTML = '';
+    selectedVideoId = null;
+    selectedVideoTitle = null;
 }
 
 // Show music message
