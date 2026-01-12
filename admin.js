@@ -243,10 +243,22 @@ async function handleFormSubmit(e) {
 
 // Create new month
 async function createMonth(name, description, imageData) {
+    // Get the max month_order
+    const { data: maxOrderData, error: maxError } = await window.supabaseClient
+        .from('months')
+        .select('month_order')
+        .order('month_order', { ascending: false })
+        .limit(1);
+
+    if (maxError) throw maxError;
+
+    const maxOrder = maxOrderData && maxOrderData.length > 0 ? maxOrderData[0].month_order : 0;
+    const newOrder = maxOrder + 1;
+
     // Insert month
     const { data: month, error: monthError } = await window.supabaseClient
         .from('months')
-        .insert([{ name, description }])
+        .insert([{ name, description, month_order: newOrder }])
         .select()
         .single();
 
