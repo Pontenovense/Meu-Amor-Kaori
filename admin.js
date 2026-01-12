@@ -93,7 +93,7 @@ async function searchYouTube() {
         return;
     }
 
-    const apiKey = 'AIzaSyDPCXTH0fXFlCjXpcppSR7pazm871yZXms'; // Replace with your YouTube Data API v3 key
+    const apiKey = 'AIzaSyCPDleX1okLtjiAJI4G3Ouyi49ksbOjxME'; // Replace with your YouTube Data API v3 key
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query + ' music')}&type=video&key=${apiKey}&maxResults=5`;
 
     try {
