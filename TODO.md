@@ -45,3 +45,7 @@
 - [ ] Test changes on actual iOS Safari
 - [ ] Verify all Supabase operations have error handling
 - [ ] Ensure touch interactions work smoothly
+
+## Additional Fixes
+- [x] Fixed audio distortion when changing songs quickly (added transition flag and proper async fade handling)
+- [x] Added comprehensive YouTube API error handling and graceful degradation when blocked by ad blockers/privacy extensions

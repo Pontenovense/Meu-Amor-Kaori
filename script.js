@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let tocando = false;
     let volumeOriginal = 0.7;
     let userHasInteracted = false; // Flag para Safari autoplay
+    let isTransitioning = false; // Flag para prevenir transições sobrepostas
 
     // Configurar volume inicial
     musicas.forEach(musica => {
@@ -102,54 +103,85 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Função para tocar música específica
-    function tocarMusica(index, showNotification = true) {
+    async function tocarMusica(index, showNotification = true) {
         if (index < 0 || index >= musicas.length || !musicas[index]) {
             criarNotificacao('Música não encontrada', 'error');
             return;
         }
 
-        // Para música atual se estiver tocando
-        if (musicaAtual && tocando) {
-            if (musicaAtual.type === 'audio') {
-                fadeOut(musicaAtual.element, 300);
-            } else if (musicaAtual.type === 'youtube') {
-                musicaAtual.player.pauseVideo();
-            }
+        // Prevent overlapping transitions
+        if (isTransitioning) {
+            console.log('Transition already in progress, ignoring request');
+            return;
         }
 
-        musicaAtualIndex = index;
-        musicaAtual = musicas[musicaAtualIndex];
+        isTransitioning = true;
 
         try {
+            // Para música atual se estiver tocando
+            if (musicaAtual && tocando) {
+                if (musicaAtual.type === 'audio') {
+                    await fadeOut(musicaAtual.element, 300);
+                } else if (musicaAtual.type === 'youtube') {
+                    musicaAtual.player.pauseVideo();
+                }
+            }
+
+            musicaAtualIndex = index;
+            musicaAtual = musicas[musicaAtualIndex];
+
+            // Check if YouTube track is unavailable
+            if (musicaAtual.type === 'youtube' && musicaAtual.unavailable) {
+                console.warn(`YouTube track "${musicaAtual.title}" is unavailable, skipping`);
+                criarNotificacao(`Música "${musicaAtual.title}" não disponível (YouTube bloqueado)`, 'error');
+                // Try to play next available track
+                const nextIndex = (index + 1) % musicas.length;
+                if (nextIndex !== index) {
+                    isTransitioning = false;
+                    tocarMusica(nextIndex, showNotification);
+                }
+                return;
+            }
+
             if (musicaAtual.type === 'audio') {
                 musicaAtual.element.currentTime = 0; // Reinicia a música
-                musicaAtual.element.play().then(() => {
-                    tocando = true;
-                    fadeIn(musicaAtual.element);
-                    atualizarBotoes();
-
-                    if (showNotification) {
-                        const musicaNum = musicaAtualIndex + 1;
-                        criarNotificacao(`Tocando música ${musicaNum} 🎵`, 'play');
-                    }
-                }).catch(error => {
-                    console.error('Erro ao reproduzir música:', error);
-                    criarNotificacao('Erro ao tocar música', 'error');
-                });
-            } else if (musicaAtual.type === 'youtube') {
-                musicaAtual.player.seekTo(0); // Restart from beginning
-                musicaAtual.player.playVideo();
+                await musicaAtual.element.play();
                 tocando = true;
+                fadeIn(musicaAtual.element);
                 atualizarBotoes();
 
                 if (showNotification) {
                     const musicaNum = musicaAtualIndex + 1;
                     criarNotificacao(`Tocando música ${musicaNum} 🎵`, 'play');
                 }
+            } else if (musicaAtual.type === 'youtube') {
+                try {
+                    musicaAtual.player.seekTo(0); // Restart from beginning
+                    musicaAtual.player.playVideo();
+                    tocando = true;
+                    atualizarBotoes();
+
+                    if (showNotification) {
+                        const musicaNum = musicaAtualIndex + 1;
+                        criarNotificacao(`Tocando música ${musicaNum} 🎵`, 'play');
+                    }
+                } catch (error) {
+                    console.error('Erro ao reproduzir vídeo do YouTube:', error);
+                    criarNotificacao('Erro ao tocar vídeo do YouTube', 'error');
+                    // Mark as unavailable and try next track
+                    musicaAtual.unavailable = true;
+                    const nextIndex = (index + 1) % musicas.length;
+                    if (nextIndex !== index) {
+                        isTransitioning = false;
+                        tocarMusica(nextIndex, showNotification);
+                    }
+                }
             }
         } catch (error) {
             console.error('Erro ao iniciar música:', error);
             criarNotificacao('Erro ao iniciar música', 'error');
+        } finally {
+            isTransitioning = false;
         }
     }
 
@@ -415,22 +447,67 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // YouTube players array
     let youtubePlayers = [];
+    let youtubeAPILoaded = false;
+    let youtubeAPILoadTimeout = null;
 
     // Initialize YouTube API and players
     function initializeYouTubePlayers() {
-        if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+        if (typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
+            // YouTube API already loaded
+            youtubeAPILoaded = true;
+            createYouTubePlayers();
+        } else if (!youtubeAPILoaded) {
             // Load YouTube API if not loaded
+            console.log('🎵 Loading YouTube API...');
+
             const tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
+            tag.onerror = function() {
+                console.warn('❌ Failed to load YouTube API - YouTube videos will be unavailable');
+                youtubeAPILoaded = false;
+                handleYouTubeUnavailable();
+            };
+
             const firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+            // Set timeout for API loading
+            youtubeAPILoadTimeout = setTimeout(() => {
+                if (!youtubeAPILoaded) {
+                    console.warn('⏰ YouTube API load timeout - YouTube videos will be unavailable');
+                    handleYouTubeUnavailable();
+                }
+            }, 10000); // 10 second timeout
+
             window.onYouTubeIframeAPIReady = function() {
+                console.log('✅ YouTube API loaded successfully');
+                youtubeAPILoaded = true;
+                clearTimeout(youtubeAPILoadTimeout);
                 createYouTubePlayers();
             };
         } else {
-            createYouTubePlayers();
+            // YouTube API failed to load previously
+            handleYouTubeUnavailable();
         }
+    }
+
+    // Handle case when YouTube is unavailable
+    function handleYouTubeUnavailable() {
+        console.log('🎵 YouTube unavailable - converting YouTube tracks to audio-only or skipping');
+
+        // Mark YouTube tracks as unavailable
+        musicas.forEach((musica, index) => {
+            if (musica.type === 'youtube') {
+                musica.unavailable = true;
+                console.log(`⚠️ YouTube track "${musica.title}" unavailable due to API blocking`);
+            }
+        });
+
+        // Show notification about YouTube being blocked
+        criarNotificacao('YouTube bloqueado - algumas músicas podem não estar disponíveis', 'error');
+
+        // Continue with available tracks
+        atualizarBotoes();
     }
 
     function createYouTubePlayers() {
