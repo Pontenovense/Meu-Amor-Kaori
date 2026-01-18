@@ -9,12 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Array com todas as músicas (carregado dinamicamente)
     let musicas = [];
     let musicData = [];
-    
+
     // Variáveis de controle
     let musicaAtualIndex = 0;
     let musicaAtual = null;
     let tocando = false;
     let volumeOriginal = 0.7;
+    let userHasInteracted = false; // Flag para Safari autoplay
 
     // Configurar volume inicial
     musicas.forEach(musica => {
@@ -230,8 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Event listeners dos botões
     if (playPauseButton) {
-        playPauseButton.addEventListener('click', toggleMusic);
-        
+        playPauseButton.addEventListener('click', () => {
+            userHasInteracted = true; // Mark user interaction for Safari
+            toggleMusic();
+        });
+
         // Efeito visual
         playPauseButton.addEventListener('mousedown', () => {
             playPauseButton.style.transform = 'translateY(-1px) scale(0.98)';
@@ -239,6 +243,10 @@ document.addEventListener('DOMContentLoaded', function() {
         playPauseButton.addEventListener('mouseup', () => {
             playPauseButton.style.transform = '';
         });
+
+        // Add ARIA attributes
+        playPauseButton.setAttribute('aria-label', 'Reproduzir ou pausar música');
+        playPauseButton.setAttribute('role', 'button');
     }
 
     if (prevButton) {
@@ -303,6 +311,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Carrega músicas do Supabase
     async function loadMusic() {
+        // Show loading state
+        musicContainer.innerHTML = '<div class="loading">🎵 Carregando músicas...</div>';
+
         try {
             console.log('🎵 Carregando músicas do Supabase...');
             const { data: music, error } = await window.supabaseClient
@@ -312,6 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (error) {
                 console.error('❌ Erro ao carregar músicas:', error);
+                criarNotificacao('Erro ao carregar músicas do banco de dados', 'error');
                 // Fallback para músicas locais se houver erro
                 loadFallbackMusic();
                 return;
@@ -319,6 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!music || music.length === 0) {
                 console.log('⚠️ Nenhuma música encontrada no banco de dados');
+                criarNotificacao('Nenhuma música encontrada, carregando músicas locais', 'pause');
                 loadFallbackMusic();
                 return;
             }
@@ -383,8 +396,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 initializeYouTubePlayers();
             }
 
+            // Update button states
+            atualizarBotoes();
+
         } catch (error) {
             console.error('❌ Erro ao carregar músicas:', error);
+            criarNotificacao('Erro inesperado ao carregar músicas', 'error');
             loadFallbackMusic();
         }
     }
@@ -865,6 +882,32 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializa o botão voltar ao topo
     initializeBackToTop();
+
+    // ===== DATE CALCULATION =====
+    function calcularDiferencaDias(dataAlvo) {
+        const hoje = new Date();
+        const dataFinal = new Date(dataAlvo);
+
+        // Ajusta para considerar apenas a data, ignorando as horas
+        hoje.setHours(0, 0, 0, 0);
+        dataFinal.setHours(0, 0, 0, 0);
+
+        const diferenca = (hoje - dataFinal) / (1000 * 60 * 60 * 24);
+
+        return Math.floor(diferenca); // Garante a contagem correta de dias inteiros
+    }
+
+    function atualizarContador() {
+        const dataAlvo = "2025-01-01";
+        const diasPassados = calcularDiferencaDias(dataAlvo);
+        const contadorElement = document.getElementById("contador");
+        if (contadorElement) {
+            contadorElement.textContent = diasPassados;
+        }
+    }
+
+    // Atualiza contador na inicialização
+    atualizarContador();
 
     // Inicialização
     console.log('🎵 Sistema de música avançado carregado com sucesso!');

@@ -873,6 +873,10 @@ section {
     max-height: 90%;
     margin: auto;
     animation: zoomIn 0.3s ease;
+    role: dialog;
+    aria-modal: true;
+    aria-labelledby: modal-counter;
+    aria-describedby: modal-image;
 }
 
 .modal-content img {
@@ -883,6 +887,7 @@ section {
     object-fit: contain;
     border-radius: 15px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    id: modal-image;
 }
 
 .close {
@@ -901,6 +906,7 @@ section {
     justify-content: center;
     align-items: center;
     transition: all 0.3s ease;
+    aria-label: "Fechar modal";
 }
 
 .close:hover {
@@ -934,10 +940,12 @@ section {
 
 .modal-prev {
     left: -80px;
+    aria-label: "Imagem anterior";
 }
 
 .modal-next {
     right: -80px;
+    aria-label: "Próxima imagem";
 }
 
 .modal-counter {
@@ -951,6 +959,7 @@ section {
     padding: 8px 16px;
     border-radius: 20px;
     font-weight: 600;
+    id: modal-counter;
 }
 
 @keyframes fadeIn {

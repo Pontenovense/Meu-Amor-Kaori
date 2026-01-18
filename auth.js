@@ -376,7 +376,10 @@ async function handleLogin(e) {
             password
         });
 
-        if (error) throw error;
+        if (error) {
+            console.error('Erro no login:', error);
+            throw error;
+        }
 
         messageDiv.textContent = 'Login realizado com sucesso!';
         messageDiv.className = 'auth-success';
@@ -386,7 +389,8 @@ async function handleLogin(e) {
         }, 1500);
 
     } catch (error) {
-        messageDiv.textContent = error.message || 'Erro no login';
+        console.error('Erro ao fazer login:', error);
+        messageDiv.textContent = error.message || 'Erro inesperado no login';
         messageDiv.className = 'auth-error';
     }
 }

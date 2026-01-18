@@ -171,7 +171,7 @@ async function loadMonths() {
         console.error('❌ monthsList element not found');
         return;
     }
-    monthsList.innerHTML = '<p>Carregando meses...</p>';
+    monthsList.innerHTML = '<div class="loading">📅 Carregando meses...</div>';
 
     try {
         console.log('🔍 Querying months from database...');
@@ -184,7 +184,7 @@ async function loadMonths() {
             .order('name');
 
         if (error) {
-            console.error('❌ Database query error:', error);
+            console.error('❌ Erro na query de meses:', error);
             throw error;
         }
 
@@ -192,8 +192,13 @@ async function loadMonths() {
         monthsData = months;
         displayMonths(months);
     } catch (error) {
-        console.error('❌ Error loading months:', error);
-        monthsList.innerHTML = '<p class="error">Erro ao carregar meses. Tente novamente.</p>';
+        console.error('❌ Erro ao carregar meses:', error);
+        monthsList.innerHTML = `
+            <div class="error">
+                <p>Erro ao carregar meses: ${error.message}</p>
+                <button onclick="loadMonths()">Tentar novamente</button>
+            </div>
+        `;
     }
 }
 

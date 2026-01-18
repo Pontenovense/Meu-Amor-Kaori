@@ -10,6 +10,9 @@ async function loadMonths() {
     const mainElement = document.getElementById('resumosMain');
     console.log('📅 Carregando meses do banco de dados...');
 
+    // Show loading state
+    mainElement.innerHTML = '<div class="loading">📅 Carregando resumos...</div>';
+
     try {
         console.log('🔍 Fazendo query no Supabase...');
         const { data: months, error } = await window.supabaseClient
